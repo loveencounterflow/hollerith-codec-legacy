@@ -18,9 +18,7 @@ max_bytes_per_chr       = Math.max ( new Buffer "\uffff" ).length, ( new Buffer 
 rbuffer_min_size        = 1024
 rbuffer_delta_size      = 1024
 rbuffer_max_size        = 65536
-rbuffer_new_size        = Math.floor ( rbuffer_max_size + rbuffer_min_size ) / 2
 rbuffer                 = new Buffer rbuffer_min_size
-buffer_too_short_error  = new Error "buffer too short"
 
 #-----------------------------------------------------------------------------------------------------------
 @[ 'typemarkers' ]  = {}
@@ -58,19 +56,31 @@ bytecount_date      = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number + 1
 @[ 'keys' ][ 'lo' ] = new Buffer [ @[ 'typemarkers' ][ 'lo' ] ]
 @[ 'keys' ][ 'hi' ] = new Buffer [ @[ 'typemarkers' ][ 'hi' ] ]
 
+# #-----------------------------------------------------------------------------------------------------------
+# grow_rbuffer = ( delta_size ) ->
+#   delta_size ?= rbuffer_delta_size
+#   return null if delta_size < 1
+#   warn "growing rbuffer (#{delta_size} bytes)"
+#   new_result_buffer = new Buffer rbuffer.length + delta_size
+#   rbuffer.copy new_result_buffer
+#   rbuffer           = new_result_buffer
+#   return null
+
 #-----------------------------------------------------------------------------------------------------------
-grow_rbuffer = ( delta_size ) ->
-  delta_size ?= rbuffer_delta_size
-  return null if delta_size < 1
-  # warn "growing rbuffer (#{delta_size} bytes)"
-  new_result_buffer = new Buffer rbuffer.length + delta_size
+grow_rbuffer = ->
+  factor      = 2
+  new_size    = Math.floor rbuffer.length * factor + 0.5
+  # warn "growing rbuffer to #{new_size} bytes"
+  new_result_buffer = new Buffer new_size
   rbuffer.copy new_result_buffer
-  rbuffer     = new_result_buffer
+  rbuffer           = new_result_buffer
   return null
 
 #-----------------------------------------------------------------------------------------------------------
 release_extraneous_rbuffer_bytes = ->
-  rbuffer = new Buffer rbuffer_new_size if rbuffer.length > rbuffer_max_size
+  if rbuffer.length > rbuffer_max_size
+    # warn "shrinking rbuffer to #{rbuffer_max_size} bytes"
+    rbuffer = new Buffer rbuffer_max_size
   return null
 
 
@@ -78,7 +88,7 @@ release_extraneous_rbuffer_bytes = ->
 # VARIANTS
 #-----------------------------------------------------------------------------------------------------------
 write_singular = ( idx, value ) ->
-  throw buffer_too_short_error unless rbuffer.length >= idx + bytecount_singular
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_singular
   if      value is null   then typemarker = tm_null
   else if value is false  then typemarker = tm_false
   else if value is true   then typemarker = tm_true
@@ -100,7 +110,7 @@ read_singular = ( buffer, idx ) ->
 # NUMBERS
 #-----------------------------------------------------------------------------------------------------------
 write_number = ( idx, number ) ->
-  throw buffer_too_short_error unless rbuffer.length >= idx + bytecount_number
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_number
   if number < 0
     type    = tm_nnumber
     number  = -number
@@ -113,7 +123,7 @@ write_number = ( idx, number ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 write_infinity = ( idx, number ) ->
-  throw buffer_too_short_error unless rbuffer.length >= idx + bytecount_singular
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_singular
   rbuffer[ idx ] = if number is -Infinity then tm_ninfinity else tm_pinfinity
   return idx + bytecount_singular
 
@@ -138,10 +148,10 @@ _invert_buffer = ( buffer, idx ) ->
 # DATES
 #-----------------------------------------------------------------------------------------------------------
 write_date = ( idx, date ) ->
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_date
   number          = +date
   rbuffer[ idx ]  = tm_date
-  new_idx         = write_number idx + 1, number
-  return new_idx
+  return write_number idx + 1, number
 
 #-----------------------------------------------------------------------------------------------------------
 read_date = ( buffer, idx ) ->
@@ -155,16 +165,37 @@ read_date = ( buffer, idx ) ->
 
 #===========================================================================================================
 # TEXTS
+# #-----------------------------------------------------------------------------------------------------------
+# write_text = ( idx, text ) ->
+#   text            = text.replace /\x01/g, '\x01\x02'
+#   text            = text.replace /\x00/g, '\x01\x01'
+#   debug '©PgMtm', rbuffer.length
+#   length_estimate = max_bytes_per_chr * text.length + 3
+#   ### TAINT known to be buggy; size calculation is wrong ###
+#   grow_rbuffer length_estimate - rbuffer.length - idx - 1
+#   rbuffer[ idx ]  = tm_text
+#   try
+#     byte_count      = rbuffer.write text, idx + 1
+#   catch error
+#     warn rpr text
+#     warn 'length_estimate', rpr length_estimate
+#     debug "idx", idx
+#     debug "rbuffer.length", rbuffer.length
+#     debug "( new Buffer text ).length", ( new Buffer text ).length
+#     throw error
+#   rbuffer[ idx + byte_count + 1   ] = tm_lo
+#   return idx + byte_count + 2
+
 #-----------------------------------------------------------------------------------------------------------
 write_text = ( idx, text ) ->
-  text                              = text.replace /\x01/g, '\x01\x02'
-  text                              = text.replace /\x00/g, '\x01\x01'
-  length_estimate                   = max_bytes_per_chr * text.length + 3
-  grow_rbuffer length_estimate - rbuffer.length - idx - 1
-  rbuffer[ idx                    ] = tm_text
-  byte_count                        = rbuffer.write text, idx + 1
-  rbuffer[ idx + byte_count + 1   ] = tm_lo
-  return idx + byte_count + 2
+  text                                = text.replace /\x01/g, '\x01\x02'
+  text                                = text.replace /\x00/g, '\x01\x01'
+  bytecount_text                      = ( Buffer.byteLength text, 'utf-8' ) + 2
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_text
+  rbuffer[ idx ]                      = tm_text
+  rbuffer.write text, idx + 1
+  rbuffer[ idx + bytecount_text - 1 ] = tm_lo
+  return idx + bytecount_text
 
 #-----------------------------------------------------------------------------------------------------------
 read_text = ( buffer, idx ) ->
@@ -234,33 +265,26 @@ write = ( idx, value ) ->
 ### TAINT remove is_top_level if not used ###
 _encode = ( key, idx, is_top_level ) ->
   last_element_idx = key.length - 1
-  # debug '©GP4RE', rpr key
   for element, element_idx in key
-    loop
-      try
-        if CND.isa_list element
-          # unless is_top_level
-          #   throw new Error "unable to encode nested list"
-          rbuffer[ idx ]  = tm_list
-          idx            += +1
-          for sub_element in element
-            idx = _encode [ sub_element, ], idx, false
-          rbuffer[ idx ]  = tm_lo
-          idx            += +1
+    try
+      if CND.isa_list element
+        rbuffer[ idx ]  = tm_list
+        idx            += +1
+        for sub_element in element
+          idx = _encode [ sub_element, ], idx, false
+        rbuffer[ idx ]  = tm_lo
+        idx            += +1
+      else
+        idx = write idx, element
+    catch error
+      key_rpr = []
+      for element in key
+        if CND.isa_jsbuffer element
+          key_rpr.push "#{@rpr_of_buffer null, key[ 2 ]}"
         else
-          idx = write idx, element
-        break
-      catch error
-        unless error is buffer_too_short_error
-          key_rpr = []
-          for element in key
-            if CND.isa_jsbuffer element
-              key_rpr.push "#{@rpr_of_buffer null, key[ 2 ]}"
-            else
-              key_rpr.push rpr element
-          warn "detected problem with key [ #{rpr key_rpr.join ', '} ]"
-          throw error
-        grow_rbuffer()
+          key_rpr.push rpr element
+      warn "detected problem with key [ #{rpr key_rpr.join ', '} ]"
+      throw error
   #.........................................................................................................
   return idx
 
