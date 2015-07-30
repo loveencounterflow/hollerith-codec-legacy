@@ -12,15 +12,6 @@ CND.shim()
 
 
 #-----------------------------------------------------------------------------------------------------------
-last_unicode_chr        = ( String.fromCharCode 0xdbff ) + ( String.fromCharCode 0xdfff )
-### should always be 3 in modern versions of NodeJS: ###
-max_bytes_per_chr       = Math.max ( new Buffer "\uffff" ).length, ( new Buffer last_unicode_chr ).length / 2
-rbuffer_min_size        = 1024
-rbuffer_delta_size      = 1024
-rbuffer_max_size        = 65536
-rbuffer                 = new Buffer rbuffer_min_size
-
-#-----------------------------------------------------------------------------------------------------------
 @[ 'typemarkers' ]  = {}
 #...........................................................................................................
 tm_lo               = @[ 'typemarkers'  ][ 'lo'         ] = 0x00
@@ -56,15 +47,13 @@ bytecount_date      = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number + 1
 @[ 'keys' ][ 'lo' ] = new Buffer [ @[ 'typemarkers' ][ 'lo' ] ]
 @[ 'keys' ][ 'hi' ] = new Buffer [ @[ 'typemarkers' ][ 'hi' ] ]
 
-# #-----------------------------------------------------------------------------------------------------------
-# grow_rbuffer = ( delta_size ) ->
-#   delta_size ?= rbuffer_delta_size
-#   return null if delta_size < 1
-#   warn "growing rbuffer (#{delta_size} bytes)"
-#   new_result_buffer = new Buffer rbuffer.length + delta_size
-#   rbuffer.copy new_result_buffer
-#   rbuffer           = new_result_buffer
-#   return null
+
+#===========================================================================================================
+# RESULT BUFFER (RBUFFER)
+#-----------------------------------------------------------------------------------------------------------
+rbuffer_min_size        = 1024
+rbuffer_max_size        = 65536
+rbuffer                 = new Buffer rbuffer_min_size
 
 #-----------------------------------------------------------------------------------------------------------
 grow_rbuffer = ->
@@ -165,27 +154,6 @@ read_date = ( buffer, idx ) ->
 
 #===========================================================================================================
 # TEXTS
-# #-----------------------------------------------------------------------------------------------------------
-# write_text = ( idx, text ) ->
-#   text            = text.replace /\x01/g, '\x01\x02'
-#   text            = text.replace /\x00/g, '\x01\x01'
-#   debug '©PgMtm', rbuffer.length
-#   length_estimate = max_bytes_per_chr * text.length + 3
-#   ### TAINT known to be buggy; size calculation is wrong ###
-#   grow_rbuffer length_estimate - rbuffer.length - idx - 1
-#   rbuffer[ idx ]  = tm_text
-#   try
-#     byte_count      = rbuffer.write text, idx + 1
-#   catch error
-#     warn rpr text
-#     warn 'length_estimate', rpr length_estimate
-#     debug "idx", idx
-#     debug "rbuffer.length", rbuffer.length
-#     debug "( new Buffer text ).length", ( new Buffer text ).length
-#     throw error
-#   rbuffer[ idx + byte_count + 1   ] = tm_lo
-#   return idx + byte_count + 2
-
 #-----------------------------------------------------------------------------------------------------------
 write_text = ( idx, text ) ->
   text                                = text.replace /\x01/g, '\x01\x02'
