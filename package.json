@@ -1,6 +1,6 @@
 {
   "name": "hollerith-codec",
-  "version": "1.0.15",
+  "version": "1.0.16",
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
   "dependencies": {
