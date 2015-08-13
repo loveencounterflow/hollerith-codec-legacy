@@ -4,7 +4,7 @@
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
   "dependencies": {
-    "cnd": "^1.0.4"
+    "cnd": "^1.0.8"
   },
   "devDependencies": {
     "bytewise": "^1.1.0",
