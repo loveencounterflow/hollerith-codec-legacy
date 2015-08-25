@@ -25,6 +25,7 @@ tm_nnumber          = @[ 'typemarkers'  ][ 'nnumber'    ] = 'K'.codePointAt 0
 tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'L'.codePointAt 0
 tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'M'.codePointAt 0
 tm_text             = @[ 'typemarkers'  ][ 'text'       ] = 'T'.codePointAt 0
+tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0
 tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
 
 #-----------------------------------------------------------------------------------------------------------
@@ -326,11 +327,11 @@ _decode = ( buffer, idx, is_top_level, single ) ->
 
 
 #-----------------------------------------------------------------------------------------------------------
-@rpr_of_buffer = ( db, buffer, encoding ) ->
-  return ( rpr buffer ) + ' ' +  @_encode_buffer db, buffer, encoding
+@rpr_of_buffer = ( buffer, encoding ) ->
+  return ( rpr buffer ) + ' ' +  @_encode_buffer buffer, encoding
 
 #-----------------------------------------------------------------------------------------------------------
-@_encode_buffer = ( db, buffer, encoding = 'rdctn' ) ->
+@_encode_buffer = ( buffer, encoding = 'rdctn' ) ->
   ### TAINT use switch, emit error if `encoding` not list or known key ###
   encoding = @encodings[ encoding ] unless CND.isa_list encoding
   return ( encoding[ buffer[ idx ] ] for idx in [ 0 ... buffer.length ] ).join ''

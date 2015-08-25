@@ -57,6 +57,15 @@ CODEC                     = require './main'
   T.eq key, CODEC.decode key_bfr
   whisper "key length: #{key_bfr.length}"
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec accepts private type" ] = ( T ) ->
+  markers     = CODEC[ 'typemarkers' ]
+  key         = [ markers[ 'private' ], 'foo', ]
+  key_bfr     = CODEC.encode key
+  debug '©ehT4A', key_bfr, ( CODEC.rpr_of_buffer key_bfr )#, CODEC.decode key_bfr
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
+
 
 #-----------------------------------------------------------------------------------------------------------
 @_main = ->
