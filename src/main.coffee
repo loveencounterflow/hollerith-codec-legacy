@@ -100,17 +100,23 @@ read_singular = ( buffer, idx ) ->
 # PRIVATES
 #-----------------------------------------------------------------------------------------------------------
 write_private = ( idx, value ) ->
-  grow_rbuffer() until rbuffer.length >= idx + bytecount_typemarker
+  grow_rbuffer() until rbuffer.length >= idx + 3 * bytecount_typemarker
   rbuffer[ idx ]  = tm_private
+  idx            += bytecount_typemarker
+  rbuffer[ idx ]  = tm_list
   idx            += bytecount_typemarker
   type            = value[ 'type' ] ? 'private'
   wrapped_value   = [ type, value[ 'value' ], ]
-  return _encode wrapped_value, idx
+  idx             = _encode wrapped_value, idx
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_typemarker
+  rbuffer[ idx ]  = tm_lo
+  idx            += bytecount_typemarker
+  return idx
 
 #-----------------------------------------------------------------------------------------------------------
 read_private = ( buffer, idx ) ->
+  debug 'read_private', idx
   idx                        += bytecount_typemarker
-  # [ idx, [ type,  value, ] ]  = _decode buffer, idx, false
   [ idx, [ type,  value, ] ]  = read_list buffer, idx#, false
   return [ idx, { type, value}, ]
 

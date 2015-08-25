@@ -73,6 +73,8 @@ CODEC                     = require './main'
   key_bfr     = CODEC.encode key
   debug '©ehT4A', key
   debug '©ialgj', CODEC.rpr_of_buffer key_bfr
+  debug '©ialgj', CODEC.rpr_of_buffer CODEC.encode [ 'price', 'abc' ]
+  debug '©ialgj', CODEC.rpr_of_buffer CODEC.encode [ [ 'price', 'abc' ], 'xxx', ]
   debug '©XCwLq', CODEC.decode key_bfr
   T.eq key, CODEC.decode key_bfr
   whisper "key length: #{key_bfr.length}"
