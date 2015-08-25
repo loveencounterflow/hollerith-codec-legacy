@@ -58,15 +58,38 @@ CODEC                     = require './main'
   whisper "key length: #{key_bfr.length}"
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "codec accepts private type" ] = ( T ) ->
-  markers     = CODEC[ 'typemarkers' ]
-  key         = [ markers[ 'private' ], 'foo', ]
+@[ "codec accepts private type (1)" ] = ( T ) ->
+  key         = [ { type: 'price', value: 'abc', }, ]
   key_bfr     = CODEC.encode key
-  debug '©ehT4A', key_bfr,
+  debug '©ehT4A', key
   debug '©ialgj', CODEC.rpr_of_buffer key_bfr
   debug '©XCwLq', CODEC.decode key_bfr
   T.eq key, CODEC.decode key_bfr
   whisper "key length: #{key_bfr.length}"
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec accepts private type (2)" ] = ( T ) ->
+  key         = [ { type: 'price', value: 'abc', }, 'xxx', ]
+  key_bfr     = CODEC.encode key
+  debug '©ehT4A', key
+  debug '©ialgj', CODEC.rpr_of_buffer key_bfr
+  debug '©XCwLq', CODEC.decode key_bfr
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
+
+# #-----------------------------------------------------------------------------------------------------------
+# @[ "codec decodes private type with custom decoder" ] = ( T ) ->
+#   value         = 'some/file/route'
+#   encoded_value = value.split '/'
+#   key         = [ 'foo', { type: 'route', value: encoded_value, }, 'bar', ]
+#   key_bfr     = CODEC.encode key
+#   # CODEC.wrap 'route', [ 'foo', 'bar', ]
+#   # CODEC.unwrap { type: 'route', value: [ 'foo', 'bar', ], }
+#   # debug '©ehT4A', key
+#   # debug '©ialgj', CODEC.rpr_of_buffer key_bfr
+#   debug '©XCwLq', CODEC.decode key_bfr
+#   T.eq key, CODEC.decode key_bfr
+#   whisper "key length: #{key_bfr.length}"
 
 
 #-----------------------------------------------------------------------------------------------------------

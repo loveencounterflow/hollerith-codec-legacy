@@ -29,11 +29,11 @@ tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0
 tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
 
 #-----------------------------------------------------------------------------------------------------------
-@[ 'bytecounts' ]   = {}
-#...........................................................................................................
-bytecount_singular  = @[ 'bytecounts'   ][ 'singular'   ] = 1
-bytecount_number    = @[ 'bytecounts'   ][ 'number'     ] = 9
-bytecount_date      = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number + 1
+@[ 'bytecounts' ]     = {}
+bytecount_singular    = @[ 'bytecounts'   ][ 'singular'   ] = 1
+bytecount_typemarker  = @[ 'bytecounts'   ][ 'typemarker' ] = 1
+bytecount_number      = @[ 'bytecounts'   ][ 'number'     ] = 9
+bytecount_date        = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number + 1
 
 #-----------------------------------------------------------------------------------------------------------
 @[ 'sentinels' ]  = {}
@@ -94,6 +94,25 @@ read_singular = ( buffer, idx ) ->
     when tm_true  then value = true
     else throw new Error "unable to decode 0x#{typemarker.toString 16} at index #{idx} (#{rpr buffer})"
   return [ idx + bytecount_singular, value, ]
+
+
+#===========================================================================================================
+# PRIVATES
+#-----------------------------------------------------------------------------------------------------------
+write_private = ( idx, value ) ->
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_typemarker
+  rbuffer[ idx ]  = tm_private
+  idx            += bytecount_typemarker
+  type            = value[ 'type' ] ? 'private'
+  wrapped_value   = [ type, value[ 'value' ], ]
+  return _encode wrapped_value, idx
+
+#-----------------------------------------------------------------------------------------------------------
+read_private = ( buffer, idx ) ->
+  idx                        += bytecount_typemarker
+  # [ idx, [ type,  value, ] ]  = _decode buffer, idx, false
+  [ idx, [ type,  value, ] ]  = read_list buffer, idx#, false
+  return [ idx, { type, value}, ]
 
 
 #===========================================================================================================
@@ -206,14 +225,15 @@ write = ( idx, value ) ->
     when 'jsinfinity' then return write_infinity idx, value
     when 'jsdate'     then return write_date     idx, value
   #.........................................................................................................
-  return write_singular  idx, value
+  return write_private  idx, value if CND.isa_pod value
+  return write_singular idx, value
 
 
 #===========================================================================================================
 # PUBLIC API
 #-----------------------------------------------------------------------------------------------------------
 @encode = ( key, extra_byte ) ->
-  rbuffer.fill 0x99
+  rbuffer.fill 0x00
   throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
   idx = _encode key, 0
   #.........................................................................................................
@@ -271,6 +291,7 @@ _decode = ( buffer, idx, single ) ->
       when tm_pnumber    then [ idx, value, ] = read_pnumber    buffer, idx
       when tm_pinfinity  then [ idx, value, ] = [ idx + 1, +Infinity, ]
       when tm_date       then [ idx, value, ] = read_date       buffer, idx
+      when tm_private    then [ idx, value, ] = read_private    buffer, idx
       else                    [ idx, value, ] = read_singular   buffer, idx
     R.push value
     break if single
