@@ -101,24 +101,28 @@ read_singular = ( buffer, idx ) ->
 #-----------------------------------------------------------------------------------------------------------
 write_private = ( idx, value ) ->
   grow_rbuffer() until rbuffer.length >= idx + 3 * bytecount_typemarker
+  #.........................................................................................................
   rbuffer[ idx ]  = tm_private
   idx            += bytecount_typemarker
+  #.........................................................................................................
   rbuffer[ idx ]  = tm_list
   idx            += bytecount_typemarker
+  #.........................................................................................................
   type            = value[ 'type' ] ? 'private'
   wrapped_value   = [ type, value[ 'value' ], ]
   idx             = _encode wrapped_value, idx
-  grow_rbuffer() until rbuffer.length >= idx + bytecount_typemarker
+  #.........................................................................................................
   rbuffer[ idx ]  = tm_lo
   idx            += bytecount_typemarker
+  #.........................................................................................................
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
-read_private = ( buffer, idx ) ->
-  debug 'read_private', idx
+read_private = ( buffer, idx, private_handler ) ->
   idx                        += bytecount_typemarker
-  [ idx, [ type,  value, ] ]  = read_list buffer, idx#, false
-  return [ idx, { type, value}, ]
+  [ idx, [ type,  value, ] ]  = read_list buffer, idx
+  R                           = if private_handler? then private_handler type, value else { type, value}
+  return [ idx, R, ]
 
 
 #===========================================================================================================
@@ -280,11 +284,11 @@ _encode = ( key, idx ) ->
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
-@decode = ( buffer ) ->
-  return ( _decode buffer, 0, false )[ 1 ]
+@decode = ( buffer, private_handler ) ->
+  return ( _decode buffer, 0, false, private_handler )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
-_decode = ( buffer, idx, single ) ->
+_decode = ( buffer, idx, single, private_handler ) ->
   R         = []
   last_idx  = buffer.length - 1
   loop
@@ -297,7 +301,7 @@ _decode = ( buffer, idx, single ) ->
       when tm_pnumber    then [ idx, value, ] = read_pnumber    buffer, idx
       when tm_pinfinity  then [ idx, value, ] = [ idx + 1, +Infinity, ]
       when tm_date       then [ idx, value, ] = read_date       buffer, idx
-      when tm_private    then [ idx, value, ] = read_private    buffer, idx
+      when tm_private    then [ idx, value, ] = read_private    buffer, idx, private_handler
       else                    [ idx, value, ] = read_singular   buffer, idx
     R.push value
     break if single
