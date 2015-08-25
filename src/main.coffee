@@ -190,7 +190,7 @@ read_list = ( buffer, idx ) ->
   idx  += +1
   loop
     break if ( byte = buffer[ idx ] ) is tm_lo
-    [ idx, value, ] = _decode buffer, idx, false
+    [ idx, value, ] = _decode buffer, idx, true
     R.push value[ 0 ]
     throw new Error "runaway list at index #{idx}" unless byte?
   return [ idx + 1, R, ]
@@ -255,7 +255,7 @@ _encode = ( key, idx ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @decode = ( buffer ) ->
-  return ( _decode buffer, 0, true )[ 1 ]
+  return ( _decode buffer, 0, false )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
 _decode = ( buffer, idx, single ) ->

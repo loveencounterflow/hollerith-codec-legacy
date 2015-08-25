@@ -35,38 +35,38 @@ CODEC                     = require './main'
   T.eq key, CODEC.decode key_bfr
   whisper "key length: #{key_bfr.length}"
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "codec encodes and decodes dates" ] = ( T ) ->
-#   key     = [ 'foo', ( new Date() ), 5678, ]
-#   key_bfr = CODEC.encode key
-#   T.eq key, CODEC.decode key_bfr
-#   whisper "key length: #{key_bfr.length}"
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec encodes and decodes dates" ] = ( T ) ->
+  key     = [ 'foo', ( new Date() ), 5678, ]
+  key_bfr = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "codec accepts long numbers" ] = ( T ) ->
-#   key     = [ 'foo', ( i for i in [ 0 .. 1000 ] ), 'bar', ]
-#   key_bfr = CODEC.encode key
-#   T.eq key, CODEC.decode key_bfr
-#   whisper "key length: #{key_bfr.length}"
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec accepts long numbers" ] = ( T ) ->
+  key     = [ 'foo', ( i for i in [ 0 .. 1000 ] ), 'bar', ]
+  key_bfr = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "codec accepts long texts" ] = ( T ) ->
-#   long_text   = ( new Array 1e4 ).join '#'
-#   key         = [ 'foo', [ long_text, long_text, long_text, long_text, ], 42, ]
-#   key_bfr     = CODEC.encode key
-#   T.eq key, CODEC.decode key_bfr
-#   whisper "key length: #{key_bfr.length}"
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec accepts long texts" ] = ( T ) ->
+  long_text   = ( new Array 1e4 ).join '#'
+  key         = [ 'foo', [ long_text, long_text, long_text, long_text, ], 42, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "codec accepts private type" ] = ( T ) ->
-#   markers     = CODEC[ 'typemarkers' ]
-#   key         = [ markers[ 'private' ], 'foo', ]
-#   key_bfr     = CODEC.encode key
-#   debug '©ehT4A', key_bfr,
-#   debug '©ialgj', CODEC.rpr_of_buffer key_bfr
-#   debug '©XCwLq', CODEC.decode key_bfr
-#   T.eq key, CODEC.decode key_bfr
-#   whisper "key length: #{key_bfr.length}"
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec accepts private type" ] = ( T ) ->
+  markers     = CODEC[ 'typemarkers' ]
+  key         = [ markers[ 'private' ], 'foo', ]
+  key_bfr     = CODEC.encode key
+  debug '©ehT4A', key_bfr,
+  debug '©ialgj', CODEC.rpr_of_buffer key_bfr
+  debug '©XCwLq', CODEC.decode key_bfr
+  T.eq key, CODEC.decode key_bfr
+  whisper "key length: #{key_bfr.length}"
 
 
 #-----------------------------------------------------------------------------------------------------------
