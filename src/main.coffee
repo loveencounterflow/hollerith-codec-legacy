@@ -184,16 +184,13 @@ read_text = ( buffer, idx ) ->
 #===========================================================================================================
 # LISTS
 #-----------------------------------------------------------------------------------------------------------
-### TAINT remove is_top_level if not used ###
-read_list = ( buffer, idx, is_top_level ) ->
-  # urge '©J2d6R', buffer[ idx ], buffer[ idx ] is tm_text
-  # throw new Error "unable to read nested list at index #{idx}" unless is_top_level
+read_list = ( buffer, idx ) ->
   throw new Error "not a list at index #{idx}" unless buffer[ idx ] is tm_list
   R     = []
   idx  += +1
   loop
     break if ( byte = buffer[ idx ] ) is tm_lo
-    [ idx, value, ] = _decode buffer, idx, false, true
+    [ idx, value, ] = _decode buffer, idx, false
     R.push value[ 0 ]
     throw new Error "runaway list at index #{idx}" unless byte?
   return [ idx + 1, R, ]
@@ -218,7 +215,7 @@ write = ( idx, value ) ->
 @encode = ( key, extra_byte ) ->
   rbuffer.fill 0x99
   throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx = _encode key, 0, true
+  idx = _encode key, 0
   #.........................................................................................................
   if extra_byte?
     rbuffer[ idx ]  = extra_byte
@@ -231,8 +228,7 @@ write = ( idx, value ) ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-### TAINT remove is_top_level if not used ###
-_encode = ( key, idx, is_top_level ) ->
+_encode = ( key, idx ) ->
   last_element_idx = key.length - 1
   for element, element_idx in key
     try
@@ -240,7 +236,7 @@ _encode = ( key, idx, is_top_level ) ->
         rbuffer[ idx ]  = tm_list
         idx            += +1
         for sub_element in element
-          idx = _encode [ sub_element, ], idx, false
+          idx = _encode [ sub_element, ], idx
         rbuffer[ idx ]  = tm_lo
         idx            += +1
       else
@@ -259,17 +255,16 @@ _encode = ( key, idx, is_top_level ) ->
 
 #-----------------------------------------------------------------------------------------------------------
 @decode = ( buffer ) ->
-  return ( _decode buffer, 0, true, false )[ 1 ]
+  return ( _decode buffer, 0, true )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
-### TAINT remove is_top_level if not used ###
-_decode = ( buffer, idx, is_top_level, single ) ->
+_decode = ( buffer, idx, single ) ->
   R         = []
   last_idx  = buffer.length - 1
   loop
     break if idx > last_idx
     switch type = buffer[ idx ]
-      when tm_list       then [ idx, value, ] = read_list       buffer, idx, is_top_level
+      when tm_list       then [ idx, value, ] = read_list       buffer, idx
       when tm_text       then [ idx, value, ] = read_text       buffer, idx
       when tm_nnumber    then [ idx, value, ] = read_nnumber    buffer, idx
       when tm_ninfinity  then [ idx, value, ] = [ idx + 1, -Infinity, ]
