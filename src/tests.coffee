@@ -61,35 +61,27 @@ CODEC                     = require './main'
 @[ "codec accepts private type (1)" ] = ( T ) ->
   key         = [ { type: 'price', value: 'abc', }, ]
   key_bfr     = CODEC.encode key
-  debug '©ehT4A', key
-  debug '©ialgj', CODEC.rpr_of_buffer key_bfr
-  debug '©XCwLq', CODEC.decode key_bfr
   T.eq key, CODEC.decode key_bfr
-  whisper "key length: #{key_bfr.length}"
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "codec accepts private type (2)" ] = ( T ) ->
-  key         = [ { type: 'price', value: 'abc', }, 'xxx', ]
+  key         = [ 123, 456, { type: 'price', value: 'abc', }, 'xxx', ]
   key_bfr     = CODEC.encode key
-  debug '©ehT4A', key
-  debug '©ialgj', CODEC.rpr_of_buffer key_bfr
-  debug '©XCwLq', CODEC.decode key_bfr
   T.eq key, CODEC.decode key_bfr
-  whisper "key length: #{key_bfr.length}"
 
-# #-----------------------------------------------------------------------------------------------------------
-# @[ "codec decodes private type with custom decoder" ] = ( T ) ->
-#   value         = 'some/file/route'
-#   encoded_value = value.split '/'
-#   key         = [ 'foo', { type: 'route', value: encoded_value, }, 'bar', ]
-#   key_bfr     = CODEC.encode key
-#   # CODEC.wrap 'route', [ 'foo', 'bar', ]
-#   # CODEC.unwrap { type: 'route', value: [ 'foo', 'bar', ], }
-#   # debug '©ehT4A', key
-#   # debug '©ialgj', CODEC.rpr_of_buffer key_bfr
-#   debug '©XCwLq', CODEC.decode key_bfr
-#   T.eq key, CODEC.decode key_bfr
-#   whisper "key length: #{key_bfr.length}"
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec decodes private type with custom decoder" ] = ( T ) ->
+  value         = '/usr/local/lib/node_modules/coffee-script/README.md'
+  matcher       = [ value, ]
+  encoded_value = value.split '/'
+  key           = [ { type: 'route', value: encoded_value, }, ]
+  key_bfr       = CODEC.encode key
+  #.........................................................................................................
+  decoded_key   = CODEC.decode key_bfr, ( type, value ) ->
+    return value.join '/' if type is 'route'
+    throw new Error "unknown private type #{rpr type}"
+  #.........................................................................................................
+  T.eq matcher, decoded_key
 
 
 #-----------------------------------------------------------------------------------------------------------
