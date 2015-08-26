@@ -48,6 +48,10 @@ bytecount_date        = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number +
 @[ 'keys' ][ 'lo' ] = new Buffer [ @[ 'typemarkers' ][ 'lo' ] ]
 @[ 'keys' ][ 'hi' ] = new Buffer [ @[ 'typemarkers' ][ 'hi' ] ]
 
+#-----------------------------------------------------------------------------------------------------------
+@[ 'symbols' ]  = {}
+symbol_fallback = @[ 'fallback' ] = Symbol 'fallback'
+
 
 #===========================================================================================================
 # RESULT BUFFER (RBUFFER)
@@ -121,7 +125,11 @@ write_private = ( idx, value ) ->
 read_private = ( buffer, idx, private_handler ) ->
   idx                        += bytecount_typemarker
   [ idx, [ type,  value, ] ]  = read_list buffer, idx
-  R                           = if private_handler? then private_handler type, value else { type, value}
+  if private_handler?
+    R = private_handler type, value, symbol_fallback
+    throw new Error "encountered illegal value `undefined` when reading private type" if R is undefined
+  if R is symbol_fallback or not private_handler?
+    R = { type, value, }
   return [ idx, R, ]
 
 

@@ -85,6 +85,19 @@ CODEC                     = require './main'
 
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "private type takes default shape when handler returns use_fallback" ] = ( T ) ->
+  matcher       = [ 84, { type: 'bar', value: 108, }, ]
+  key           = [ { type: 'foo', value: 42, }, { type: 'bar', value: 108, }, ]
+  key_bfr       = CODEC.encode key
+  #.........................................................................................................
+  decoded_key   = CODEC.decode key_bfr, ( type, value, use_fallback ) ->
+    return value * 2 if type is 'foo'
+    return use_fallback
+  #.........................................................................................................
+  T.eq matcher, decoded_key
+
+
+#-----------------------------------------------------------------------------------------------------------
 @_main = ->
   test @, 'timeout': 2500
 
