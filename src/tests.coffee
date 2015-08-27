@@ -83,6 +83,23 @@ CODEC                     = require './main'
   #.........................................................................................................
   T.eq matcher, decoded_key
 
+# #-----------------------------------------------------------------------------------------------------------
+# @[ "codec decodes private type with custom encoder and decoder" ] = ( T ) ->
+#   value         = '/usr/local/lib/node_modules/coffee-script/README.md'
+#   key           = [ { type: 'route', value: value, }, ]
+#   matcher       = [ value, ]
+#   #.........................................................................................................
+#   encoder = ( type, value ) ->
+#     return value.split '/' if type is 'route'
+#     throw new Error "unknown private type #{rpr type}"
+#   #.........................................................................................................
+#   decoder = ( type, value ) ->
+#     return value.join '/' if type is 'route'
+#     throw new Error "unknown private type #{rpr type}"
+#   #.........................................................................................................
+#   key_bfr       = CODEC.encode key,     encoder
+#   decoded_key   = CODEC.decode key_bfr, decoder
+#   T.eq matcher, decoded_key
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "private type takes default shape when handler returns use_fallback" ] = ( T ) ->
