@@ -103,7 +103,7 @@ read_singular = ( buffer, idx ) ->
 #===========================================================================================================
 # PRIVATES
 #-----------------------------------------------------------------------------------------------------------
-write_private = ( idx, value ) ->
+write_private = ( idx, value, encoder ) ->
   grow_rbuffer() until rbuffer.length >= idx + 3 * bytecount_typemarker
   #.........................................................................................................
   rbuffer[ idx ]  = tm_private
@@ -113,7 +113,13 @@ write_private = ( idx, value ) ->
   idx            += bytecount_typemarker
   #.........................................................................................................
   type            = value[ 'type' ] ? 'private'
-  wrapped_value   = [ type, value[ 'value' ], ]
+  value           = value[ 'value' ]
+  #.........................................................................................................
+  if encoder?
+    encoded_value   = encoder type, value, symbol_fallback
+    value           = encoded_value unless encoded_value is symbol_fallback
+  #.........................................................................................................
+  wrapped_value   = [ type, value, ]
   idx             = _encode wrapped_value, idx
   #.........................................................................................................
   rbuffer[ idx ]  = tm_lo
@@ -122,13 +128,13 @@ write_private = ( idx, value ) ->
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
-read_private = ( buffer, idx, private_handler ) ->
+read_private = ( buffer, idx, decoder ) ->
   idx                        += bytecount_typemarker
   [ idx, [ type,  value, ] ]  = read_list buffer, idx
-  if private_handler?
-    R = private_handler type, value, symbol_fallback
+  if decoder?
+    R = decoder type, value, symbol_fallback
     throw new Error "encountered illegal value `undefined` when reading private type" if R is undefined
-  if R is symbol_fallback or not private_handler?
+  if R is symbol_fallback or not decoder?
     R = { type, value, }
   return [ idx, R, ]
 
@@ -236,14 +242,14 @@ read_list = ( buffer, idx ) ->
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-write = ( idx, value ) ->
+write = ( idx, value, encoder ) ->
   switch type = CND.type_of value
     when 'text'       then return write_text     idx, value
     when 'number'     then return write_number   idx, value
     when 'jsinfinity' then return write_infinity idx, value
     when 'jsdate'     then return write_date     idx, value
   #.........................................................................................................
-  return write_private  idx, value if CND.isa_pod value
+  return write_private  idx, value, encoder if CND.isa_pod value
   return write_singular idx, value
 
 
@@ -253,7 +259,7 @@ write = ( idx, value ) ->
 @encode = ( key, encoder ) ->
   rbuffer.fill 0x00
   throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx = _encode key, 0
+  idx = _encode key, 0, encoder
   R   = new Buffer idx
   rbuffer.copy R, 0, 0, idx
   release_extraneous_rbuffer_bytes()
@@ -265,7 +271,7 @@ write = ( idx, value ) ->
   ### TAINT code duplication ###
   rbuffer.fill 0x00
   throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx             = _encode key, 0
+  idx             = _encode key, 0, encoder
   grow_rbuffer() until rbuffer.length >= idx + 1
   rbuffer[ idx ]  = tm_hi
   idx            += +1
@@ -276,7 +282,7 @@ write = ( idx, value ) ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-_encode = ( key, idx ) ->
+_encode = ( key, idx, encoder ) ->
   last_element_idx = key.length - 1
   for element, element_idx in key
     try
@@ -284,11 +290,11 @@ _encode = ( key, idx ) ->
         rbuffer[ idx ]  = tm_list
         idx            += +1
         for sub_element in element
-          idx = _encode [ sub_element, ], idx
+          idx = _encode [ sub_element, ], idx, encoder
         rbuffer[ idx ]  = tm_lo
         idx            += +1
       else
-        idx = write idx, element
+        idx = write idx, element, encoder
     catch error
       key_rpr = []
       for element in key
@@ -302,11 +308,11 @@ _encode = ( key, idx ) ->
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
-@decode = ( buffer, private_handler ) ->
-  return ( _decode buffer, 0, false, private_handler )[ 1 ]
+@decode = ( buffer, decoder ) ->
+  return ( _decode buffer, 0, false, decoder )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
-_decode = ( buffer, idx, single, private_handler ) ->
+_decode = ( buffer, idx, single, decoder ) ->
   R         = []
   last_idx  = buffer.length - 1
   loop
@@ -319,7 +325,7 @@ _decode = ( buffer, idx, single, private_handler ) ->
       when tm_pnumber    then [ idx, value, ] = read_pnumber    buffer, idx
       when tm_pinfinity  then [ idx, value, ] = [ idx + 1, +Infinity, ]
       when tm_date       then [ idx, value, ] = read_date       buffer, idx
-      when tm_private    then [ idx, value, ] = read_private    buffer, idx, private_handler
+      when tm_private    then [ idx, value, ] = read_private    buffer, idx, decoder
       else                    [ idx, value, ] = read_singular   buffer, idx
     R.push value
     break if single
