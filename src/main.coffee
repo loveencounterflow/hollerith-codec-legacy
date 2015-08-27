@@ -265,14 +265,11 @@ write = ( idx, value ) ->
   ### TAINT code duplication ###
   rbuffer.fill 0x00
   throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx = _encode key, 0
-  #.........................................................................................................
-  if extra_byte?
-    grow_rbuffer() until rbuffer.length >= idx + 1
-    rbuffer[ idx ]  = tm_hi
-    idx            += +1
-  #.........................................................................................................
-  R = new Buffer idx
+  idx             = _encode key, 0
+  grow_rbuffer() until rbuffer.length >= idx + 1
+  rbuffer[ idx ]  = tm_hi
+  idx            += +1
+  R               = new Buffer idx
   rbuffer.copy R, 0, 0, idx
   release_extraneous_rbuffer_bytes()
   #.........................................................................................................
