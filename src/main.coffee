@@ -219,8 +219,8 @@ read_text = ( buffer, idx ) ->
     break if ( byte = buffer[ stop_idx ] ) is tm_lo
     throw new Error "runaway string at index #{idx}" unless byte?
   R = buffer.toString 'utf-8', idx + 1, stop_idx
-  R = R.replace /\x01\x02/g, '\x01'
   R = R.replace /\x01\x01/g, '\x00'
+  R = R.replace /\x01\x02/g, '\x01'
   return [ stop_idx + 1, R, ]
 
 

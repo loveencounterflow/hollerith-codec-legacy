@@ -58,6 +58,34 @@ CODEC                     = require './main'
   whisper "key length: #{key_bfr.length}"
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (1)" ] = ( T ) ->
+  text        = 'abc\x00\x00\x00\x00def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (2)" ] = ( T ) ->
+  text        = 'abc\x01\x01\x01\x01def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (3)" ] = ( T ) ->
+  text        = 'abc\x00\x01\x00\x01def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (4)" ] = ( T ) ->
+  text        = 'abc\x01\x00\x01\x00def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
 @[ "codec accepts private type (1)" ] = ( T ) ->
   key         = [ { type: 'price', value: 'abc', }, ]
   key_bfr     = CODEC.encode key
