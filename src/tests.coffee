@@ -152,10 +152,10 @@ CODEC                     = require './main'
   matcher       = [ ( new Set 'qwert' ), ]
   key_bfr       = CODEC.encode key
   decoded_key   = CODEC.decode key_bfr
-  debug CODEC.rpr_of_buffer key_bfr
-  debug CODEC.decode key_bfr
-  debug decoded_key
-  debug matcher
+  # debug CODEC.rpr_of_buffer key_bfr
+  # debug CODEC.decode key_bfr
+  # debug decoded_key
+  # debug matcher
   T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
 
 #-----------------------------------------------------------------------------------------------------------
@@ -175,7 +175,7 @@ CODEC                     = require './main'
     throw new Error "unknown private type #{rpr type}"
   #.........................................................................................................
   key_bfr       = CODEC.encode key,     encoder
-  debug '©T4WKz', CODEC.rpr_of_buffer key_bfr
+  # debug '©T4WKz', CODEC.rpr_of_buffer key_bfr
   decoded_key_1 = CODEC.decode key_bfr
   T.eq matcher_1, decoded_key_1
   decoded_key_2 = CODEC.decode key_bfr, decoder

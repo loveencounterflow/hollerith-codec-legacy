@@ -120,8 +120,8 @@ write_private = ( idx, value, encoder ) ->
     encoded_value   = encoder type, proper_value, symbol_fallback
     proper_value    = encoded_value unless encoded_value is symbol_fallback
   #.........................................................................................................
-  ### Built-in private types ###
   else if type.startsWith '-'
+    ### Built-in private types ###
     switch type
       when '-set'
         null # already dealt with in `write`
@@ -144,19 +144,18 @@ read_private = ( buffer, idx, decoder ) ->
   if decoder?
     R = decoder type, value, symbol_fallback
     throw new Error "encountered illegal value `undefined` when reading private type" if R is undefined
+    R = { type, value, } if R is symbol_fallback
   #.........................................................................................................
   else if type.startsWith '-'
     ### Built-in private types ###
     switch type
       when '-set'
+        ### TAINT wasting bytes because wrapped twice ###
         R = new Set value[ 0 ]
       else
         throw new Error "unknown built-in private type #{rpr type}"
   #.........................................................................................................
   else
-    R = { type, value, }
-  #.........................................................................................................
-  if R is symbol_fallback or not decoder?
     R = { type, value, }
   return [ idx, R, ]
 
@@ -270,7 +269,10 @@ write = ( idx, value, encoder ) ->
     when 'number'     then return write_number   idx, value
     when 'infinity'   then return write_infinity idx, value
     when 'date'       then return write_date     idx, value
-    when 'set'        then return write_private  idx, { type: '-set', value: [ ( Array.from value ), ], }
+    #.......................................................................................................
+    when 'set'
+      ### TAINT wasting bytes because wrapped too deep ###
+      return write_private  idx, { type: '-set', value: [ ( Array.from value ), ], }
   #.........................................................................................................
   return write_private  idx, value, encoder if CND.isa_pod value
   return write_singular idx, value
