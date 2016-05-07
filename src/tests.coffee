@@ -70,8 +70,8 @@ CODEC                     = require './main'
   T.eq key, CODEC.decode key_bfr
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "codec decodes private type with custom decoder" ] = ( T ) ->
-  value         = '/usr/local/lib/node_modules/coffee-script/README.md'
+@[ "codec decodes private type with custom decoder (1)" ] = ( T ) ->
+  value         = '/etc/cron.d/anacron'
   matcher       = [ value, ]
   encoded_value = value.split '/'
   key           = [ { type: 'route', value: encoded_value, }, ]
@@ -81,8 +81,54 @@ CODEC                     = require './main'
     return value.join '/' if type is 'route'
     throw new Error "unknown private type #{rpr type}"
   #.........................................................................................................
+  # debug CODEC.rpr_of_buffer key_bfr
+  # debug CODEC.decode key_bfr
+  # debug decoded_key
   T.eq matcher, decoded_key
 
+#-----------------------------------------------------------------------------------------------------------
+@_sets_are_equal = ( a, b ) ->
+  ### TAINT doen't work for (sub-) elements that are sets or maps ###
+  return false unless ( CND.isa a, 'set' ) and ( CND.isa b, 'set' )
+  return false unless a.size is b.size
+  a_keys = a.keys()
+  b_keys = b.keys()
+  loop
+    { value: a_value, done: a_done, } = a_keys.next()
+    { value: b_value, done: b_done, } = b_keys.next()
+    break if a_done or b_done
+    return false unless CND.equals a_value, b_value
+  return true
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec decodes private type with custom decoder (2)" ] = ( T ) ->
+  value         = new Set 'qwert'
+  matcher       = [ value, ]
+  encoded_value = Array.from value
+  key           = [ { type: 'set', value: encoded_value, }, ]
+  key_bfr       = CODEC.encode key
+  #.........................................................................................................
+  decoded_key   = CODEC.decode key_bfr, ( type, value ) ->
+    return new Set value if type is 'set'
+    throw new Error "unknown private type #{rpr type}"
+  #.........................................................................................................
+  # debug CODEC.rpr_of_buffer key_bfr
+  # debug CODEC.decode key_bfr
+  # debug decoded_key
+  # debug matcher
+  T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "Support for Sets" ] = ( T ) ->
+  key           = [ ( new Set 'qwert' ), ]
+  matcher       = [ ( new Set 'qwert' ), ]
+  key_bfr       = CODEC.encode key
+  decoded_key   = CODEC.decode key_bfr
+  debug CODEC.rpr_of_buffer key_bfr
+  debug CODEC.decode key_bfr
+  debug decoded_key
+  debug matcher
+  T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
 
 #-----------------------------------------------------------------------------------------------------------
 @_main = ->

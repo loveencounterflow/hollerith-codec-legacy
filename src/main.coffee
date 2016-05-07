@@ -24,6 +24,7 @@ tm_ninfinity        = @[ 'typemarkers'  ][ 'ninfinity'  ] = 'J'.codePointAt 0
 tm_nnumber          = @[ 'typemarkers'  ][ 'nnumber'    ] = 'K'.codePointAt 0
 tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'L'.codePointAt 0
 tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'M'.codePointAt 0
+# tm_set              = @[ 'typemarkers'  ][ 'set'        ] = 'S'.codePointAt 0
 tm_text             = @[ 'typemarkers'  ][ 'text'       ] = 'T'.codePointAt 0
 tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0
 tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
@@ -108,8 +109,18 @@ write_private = ( idx, value ) ->
   rbuffer[ idx ]  = tm_list
   idx            += bytecount_typemarker
   #.........................................................................................................
-  type            = value[ 'type' ] ? 'private'
-  wrapped_value   = [ type, value[ 'value' ], ]
+  type            = value[ 'type'  ] ? 'private'
+  proper_value    = value[ 'value' ]
+  #.........................................................................................................
+  ### Built-in private types ###
+  if type.startsWith '-'
+    switch type
+      when '-set'
+        null # already dealt with in `write`
+      else
+        throw new Error "unknown built-in private type #{rpr type}"
+  #.........................................................................................................
+  wrapped_value   = [ type, proper_value, ]
   idx             = _encode wrapped_value, idx
   #.........................................................................................................
   rbuffer[ idx ]  = tm_lo
@@ -121,7 +132,21 @@ write_private = ( idx, value ) ->
 read_private = ( buffer, idx, private_handler ) ->
   idx                        += bytecount_typemarker
   [ idx, [ type,  value, ] ]  = read_list buffer, idx
-  R                           = if private_handler? then private_handler type, value else { type, value}
+  #.........................................................................................................
+  if private_handler?
+    R = private_handler type, value
+  #.........................................................................................................
+  else if type.startsWith '-'
+    ### Built-in private types ###
+    switch type
+      when '-set'
+        R = new Set value[ 0 ]
+      else
+        throw new Error "unknown built-in private type #{rpr type}"
+  #.........................................................................................................
+  else
+    R = { type, value, }
+  #.........................................................................................................
   return [ idx, R, ]
 
 
@@ -232,8 +257,9 @@ write = ( idx, value ) ->
   switch type = CND.type_of value
     when 'text'       then return write_text     idx, value
     when 'number'     then return write_number   idx, value
-    when 'jsinfinity' then return write_infinity idx, value
-    when 'jsdate'     then return write_date     idx, value
+    when 'infinity'   then return write_infinity idx, value
+    when 'date'       then return write_date     idx, value
+    when 'set'        then return write_private  idx, { type: '-set', value: [ ( Array.from value ), ], }
   #.........................................................................................................
   return write_private  idx, value if CND.isa_pod value
   return write_singular idx, value
