@@ -58,6 +58,34 @@ CODEC                     = require './main'
   whisper "key length: #{key_bfr.length}"
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (1)" ] = ( T ) ->
+  text        = 'abc\x00\x00\x00\x00def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (2)" ] = ( T ) ->
+  text        = 'abc\x01\x01\x01\x01def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (3)" ] = ( T ) ->
+  text        = 'abc\x00\x01\x00\x01def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "codec preserves critical escaped characters (roundtrip) (4)" ] = ( T ) ->
+  text        = 'abc\x01\x00\x01\x00def'
+  key         = [ 'xxx', [ text, ], 0, ]
+  key_bfr     = CODEC.encode key
+  T.eq key, CODEC.decode key_bfr
+
+#-----------------------------------------------------------------------------------------------------------
 @[ "codec accepts private type (1)" ] = ( T ) ->
   key         = [ { type: 'price', value: 'abc', }, ]
   key_bfr     = CODEC.encode key
@@ -131,12 +159,40 @@ CODEC                     = require './main'
   T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
 
 #-----------------------------------------------------------------------------------------------------------
+@[ "codec decodes private type with custom encoder and decoder (3)" ] = ( T ) ->
+  route         = '/usr/local/lib/node_modules/coffee-script/README.md'
+  parts         = route.split '/'
+  key           = [ { type: 'route', value: route, }, ]
+  matcher_1     = [ { type: 'route', value: parts, }]
+  matcher_2     = [ route, ]
+  #.........................................................................................................
+  encoder = ( type, value ) ->
+    return value.split '/' if type is 'route'
+    throw new Error "unknown private type #{rpr type}"
+  #.........................................................................................................
+  decoder = ( type, value ) ->
+    return value.join '/' if type is 'route'
+    throw new Error "unknown private type #{rpr type}"
+  #.........................................................................................................
+  key_bfr       = CODEC.encode key,     encoder
+  debug '©T4WKz', CODEC.rpr_of_buffer key_bfr
+  decoded_key_1 = CODEC.decode key_bfr
+  T.eq matcher_1, decoded_key_1
+  decoded_key_2 = CODEC.decode key_bfr, decoder
+  T.eq matcher_2, decoded_key_2
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "private type takes default shape when handler returns use_fallback" ] = ( T ) ->
+  matcher       = [ 84, { type: 'bar', value: 108, }, ]
+  key           = [ { type: 'foo', value: 42, }, { type: 'bar', value: 108, }, ]
+  key_bfr       = CODEC.encode key
+  #.........................................................................................................
+  decoded_key   = CODEC.decode key_bfr, ( type, value, use_fallback ) ->
+    return value * 2 if type is 'foo'
+    return use_fallback
+  #.........................................................................................................
+  T.eq matcher, decoded_key
+
+#-----------------------------------------------------------------------------------------------------------
 @_main = ->
   test @, 'timeout': 2500
-
-
-
-
-
-
-
