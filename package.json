@@ -1,19 +1,23 @@
 {
   "name": "hollerith-codec",
+<<<<<<< HEAD
   "version": "1.0.24",
+=======
+  "version": "1.1.0",
+>>>>>>> 80ded61c8f761a4977ea2658d2cb9b9fd2bda7bf
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
   "dependencies": {
-    "cnd": "^1.0.8"
+    "cnd": "^2.0.3"
   },
   "devDependencies": {
     "bytewise": "^1.1.0",
-    "chance": "^0.7.6",
-    "coffee-script": "^1.9.3",
-    "gulp": "^3.9.0",
-    "gulp-coffee": "^2.3.1",
-    "gulp-sourcemaps": "^1.5.2",
-    "guy-test": "^1.0.4"
+    "chance": "^1.0.3",
+    "coffee-script": "^1.10.0",
+    "gulp": "^3.9.1",
+    "gulp-coffee": "^2.3.2",
+    "gulp-sourcemaps": "^1.6.0",
+    "guy-test": "^1.1.2"
   },
   "scripts": {
     "test": "gulp --harmony test",
