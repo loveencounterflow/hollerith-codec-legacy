@@ -1,10 +1,6 @@
 
 
 ############################################################################################################
-# njs_path                  = require 'path'
-# # njs_fs                    = require 'fs'
-# join                      = njs_path.join
-#...........................................................................................................
 CND                       = require 'cnd'
 rpr                       = CND.rpr
 badge                     = 'HOLLERITH-CODEC/tests'
@@ -17,11 +13,6 @@ warn                      = CND.get_logger 'warn',      badge
 help                      = CND.get_logger 'help',      badge
 urge                      = CND.get_logger 'urge',      badge
 echo                      = CND.echo.bind CND
-#...........................................................................................................
-# suspend                   = require 'coffeenode-suspend'
-# step                      = suspend.step
-# ### TAINT experimentally using `later` in place of `setImmediate` ###
-# later                     = suspend.immediately
 #...........................................................................................................
 test                      = require 'guy-test'
 CODEC                     = require './main'
