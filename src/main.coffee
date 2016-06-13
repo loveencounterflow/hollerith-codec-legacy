@@ -14,18 +14,18 @@ warn                      = CND.get_logger 'warn',      badge
 @[ 'typemarkers' ]  = {}
 #...........................................................................................................
 tm_lo               = @[ 'typemarkers'  ][ 'lo'         ] = 0x00
-tm_null             = @[ 'typemarkers'  ][ 'null'       ] = 'B'.codePointAt 0
-tm_false            = @[ 'typemarkers'  ][ 'false'      ] = 'C'.codePointAt 0
-tm_true             = @[ 'typemarkers'  ][ 'true'       ] = 'D'.codePointAt 0
-tm_list             = @[ 'typemarkers'  ][ 'list'       ] = 'E'.codePointAt 0
-tm_date             = @[ 'typemarkers'  ][ 'date'       ] = 'G'.codePointAt 0
-tm_ninfinity        = @[ 'typemarkers'  ][ 'ninfinity'  ] = 'J'.codePointAt 0
-tm_nnumber          = @[ 'typemarkers'  ][ 'nnumber'    ] = 'K'.codePointAt 0
-tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'L'.codePointAt 0
-tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'M'.codePointAt 0
-# tm_set              = @[ 'typemarkers'  ][ 'set'        ] = 'S'.codePointAt 0
-tm_text             = @[ 'typemarkers'  ][ 'text'       ] = 'T'.codePointAt 0
-tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0
+tm_null             = @[ 'typemarkers'  ][ 'null'       ] = 'B'.codePointAt 0 # 0x42
+tm_false            = @[ 'typemarkers'  ][ 'false'      ] = 'C'.codePointAt 0 # 0x43
+tm_true             = @[ 'typemarkers'  ][ 'true'       ] = 'D'.codePointAt 0 # 0x44
+tm_list             = @[ 'typemarkers'  ][ 'list'       ] = 'E'.codePointAt 0 # 0x45
+tm_date             = @[ 'typemarkers'  ][ 'date'       ] = 'G'.codePointAt 0 # 0x47
+tm_ninfinity        = @[ 'typemarkers'  ][ 'ninfinity'  ] = 'J'.codePointAt 0 # 0x4a
+tm_nnumber          = @[ 'typemarkers'  ][ 'nnumber'    ] = 'K'.codePointAt 0 # 0x4b
+tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'L'.codePointAt 0 # 0x4c
+tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'M'.codePointAt 0 # 0x4d
+# tm_set              = @[ 'typemarkers'  ][ 'set'        ] = 'S'.codePointAt 0 # 0x53
+tm_text             = @[ 'typemarkers'  ][ 'text'       ] = 'T'.codePointAt 0 # 0x54
+tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0 # 0x5a
 tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
 
 #-----------------------------------------------------------------------------------------------------------
