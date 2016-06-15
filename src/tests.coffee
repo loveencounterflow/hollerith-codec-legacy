@@ -107,7 +107,7 @@ CODEC                     = require './main'
 
 #-----------------------------------------------------------------------------------------------------------
 @_sets_are_equal = ( a, b ) ->
-  ### TAINT doen't work for (sub-) elements that are sets or maps ###
+  ### TAINT doesn't work for (sub-) elements that are sets or maps ###
   return false unless ( CND.isa a, 'set' ) and ( CND.isa b, 'set' )
   return false unless a.size is b.size
   a_keys = a.keys()
@@ -184,12 +184,22 @@ CODEC                     = require './main'
   #.........................................................................................................
   T.eq matcher, decoded_key
 
+#===========================================================================================================
+#
+#-----------------------------------------------------------------------------------------------------------
+@_prune = ->
+  for name, value of @
+    continue if name.startsWith '_'
+    delete @[ name ] unless name in include
+  return null
+
 #-----------------------------------------------------------------------------------------------------------
 @_main = ->
   test @, 'timeout': 2500
 
 ############################################################################################################
 unless module.parent?
+  # @_prune()
   @_main()
 
 
