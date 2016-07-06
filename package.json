@@ -4,14 +4,14 @@
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
   "dependencies": {
-    "cnd": "^3.0.4"
+    "cnd": "^4.1.1"
   },
   "devDependencies": {
-    "guy-test": "^1.1.2"
+    "guy-test": "^1.2.3"
   },
   "scripts": {
     "build": "coffee --map -o lib -c src",
-    "push": "git add . && git commit -m'update' && git push -u origin master",
+    "push": "git add . && git commit -m'update' && git push",
     "pub": "npm run build && npm run push && npm version patch && npm publish",
     "test": "npm run build && node lib/tests.js",
     "benchmark": "node --harmony lib/benchmark.js"
