@@ -184,6 +184,57 @@ CODEC                     = require './main'
   #.........................................................................................................
   T.eq matcher, decoded_key
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "test: flat file DB storage" ] = ( T ) ->
+  probes = [
+    [ 'foo', -Infinity, ]
+    [ 'foo', -1e12, ]
+    [ 'foo', -3, ]
+    [ 'foo', -2, ]
+    [ 'foo', -1, ]
+    [ 'foo', 1, ]
+    [ 'foo', 2, ]
+    [ 'foo', 3, ]
+    [ 'foo', 1e12, ]
+    [ 'foo', Infinity, ]
+    [ 'bar', 'blah', ]
+    [ 'bar', 'gnu', ]
+    [ 'a', ]
+    [ 'b', ]
+    [ 'c', ]
+    [ 'A', ]
+    [ 'B', ]
+    [ 'C', ]
+    [ '0', ]
+    [ '1', ]
+    [ '2', ]
+    [ 'Number', Number.EPSILON,           'EPSILON',          ]
+    [ 'Number', Number.MAX_SAFE_INTEGER,  'MAX_SAFE_INTEGER', ]
+    [ 'Number', Number.MAX_VALUE,         'MAX_VALUE',        ]
+    [ 'Number', 0,                        'ZERO',             ]
+    [ 'Number', Number.MIN_SAFE_INTEGER,  'MIN_SAFE_INTEGER', ]
+    [ 'Number', Number.MIN_VALUE,         'MIN_VALUE',        ]
+    ]
+  buffer_as_text = ( buffer ) ->
+    R = []
+    for idx in [ 0 ... buffer.length ]
+      R.push String.fromCodePoint 0x2800 + buffer[ idx ]
+    # R.push String.fromCodePoint 0x2800 while R.length < 32
+    R.push ' ' while R.length < 32
+    return R.join ''
+  probes = ( [ ( buffer_as_text CODEC.encode probe ), JSON.stringify probe, ] for probe in probes )
+  probes.sort ( a, b ) ->
+    return -1 if a[ 0 ] < b[ 0 ]
+    return +1 if a[ 0 ] > b[ 0 ]
+    return  0
+  for probe in probes
+    urge probe.join ' - '
+  # for probe in probes
+  #   probe_txt = JSON.stringify probe
+  #   key_txt   = buffer_as_text CODEC.encode probe
+  #   debug '33301', "#{key_txt} - #{probe_txt}"
+  return null
+
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
