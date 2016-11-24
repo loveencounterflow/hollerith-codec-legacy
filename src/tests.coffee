@@ -233,6 +233,8 @@ CODEC                     = require './main'
   #   probe_txt = JSON.stringify probe
   #   key_txt   = buffer_as_text CODEC.encode probe
   #   debug '33301', "#{key_txt} - #{probe_txt}"
+  urge "use `( export LC_ALL=C && sort hollerith-codec-flatfile-db.txt ) | less`"
+  urge "to sort a file with these lines"
   return null
 
 #===========================================================================================================
