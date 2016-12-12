@@ -203,6 +203,9 @@ CODEC                     = require './main'
     [ 'b', ]
     [ 'c', ]
     [ 'A', ]
+    [ '箲' ]
+    [ '筅' ]
+    [ '𥬗' ]
     [ 'B', ]
     [ 'C', ]
     [ '0', ]
@@ -220,7 +223,7 @@ CODEC                     = require './main'
     for idx in [ 0 ... buffer.length ]
       R.push String.fromCodePoint 0x2800 + buffer[ idx ]
     # R.push String.fromCodePoint 0x2800 while R.length < 32
-    R.push ' ' while R.length < 32
+    # R.push ' ' while R.length < 32
     return R.join ''
   probes = ( [ ( buffer_as_text CODEC.encode probe ), JSON.stringify probe, ] for probe in probes )
   probes.sort ( a, b ) ->
