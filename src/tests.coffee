@@ -185,7 +185,7 @@ CODEC                     = require './main'
   T.eq matcher, decoded_key
 
 #-----------------------------------------------------------------------------------------------------------
-@[ "test: flat file DB storage" ] = ( T ) ->
+@[ "test: flat file DB storage (1)" ] = ( T ) ->
   probes = [
     [ 'foo', -Infinity, ]
     [ 'foo', -1e12, ]
@@ -238,6 +238,55 @@ CODEC                     = require './main'
   #   debug '33301', "#{key_txt} - #{probe_txt}"
   urge "use `( export LC_ALL=C && sort hollerith-codec-flatfile-db.txt ) | less`"
   urge "to sort a file with these lines"
+  return null
+
+#-----------------------------------------------------------------------------------------------------------
+@[ "test: flat file DB storage (2)" ] = ( T ) ->
+  probes_and_matchers = [
+    [ [ 'foo', -Infinity ], '⡔⡦⡯⡯⠀⡊ [ \'foo\', -Infinity ]' ]
+    [ [ 'foo', -1000000000000 ], '⡔⡦⡯⡯⠀⡋⢽⢒⣥⡫⡝⣿⣿⣿ [ \'foo\', -1000000000000 ]' ]
+    [ [ 'foo', -3 ], '⡔⡦⡯⡯⠀⡋⢿⣷⣿⣿⣿⣿⣿⣿ [ \'foo\', -3 ]' ]
+    [ [ 'foo', -2 ], '⡔⡦⡯⡯⠀⡋⢿⣿⣿⣿⣿⣿⣿⣿ [ \'foo\', -2 ]' ]
+    [ [ 'foo', -1 ], '⡔⡦⡯⡯⠀⡋⣀⠏⣿⣿⣿⣿⣿⣿ [ \'foo\', -1 ]' ]
+    [ [ 'foo', 1 ], '⡔⡦⡯⡯⠀⡌⠿⣰⠀⠀⠀⠀⠀⠀ [ \'foo\', 1 ]' ]
+    [ [ 'foo', 2 ], '⡔⡦⡯⡯⠀⡌⡀⠀⠀⠀⠀⠀⠀⠀ [ \'foo\', 2 ]' ]
+    [ [ 'foo', 3 ], '⡔⡦⡯⡯⠀⡌⡀⠈⠀⠀⠀⠀⠀⠀ [ \'foo\', 3 ]' ]
+    [ [ 'foo', 1000000000000 ], '⡔⡦⡯⡯⠀⡌⡂⡭⠚⢔⢢⠀⠀⠀ [ \'foo\', 1000000000000 ]' ]
+    [ [ 'foo', Infinity ], '⡔⡦⡯⡯⠀⡍ [ \'foo\', Infinity ]' ]
+    [ [ 'bar', 'blah' ], '⡔⡢⡡⡲⠀⡔⡢⡬⡡⡨⠀ [ \'bar\', \'blah\' ]' ]
+    [ [ 'bar', 'gnu' ], '⡔⡢⡡⡲⠀⡔⡧⡮⡵⠀ [ \'bar\', \'gnu\' ]' ]
+    [ [ 'a' ], '⡔⡡⠀ [ \'a\' ]' ]
+    [ [ 'b' ], '⡔⡢⠀ [ \'b\' ]' ]
+    [ [ 'c' ], '⡔⡣⠀ [ \'c\' ]' ]
+    [ [ 'A' ], '⡔⡁⠀ [ \'A\' ]' ]
+    [ [ '箲' ], '⡔⣧⢮⢲⠀ [ \'箲\' ]' ]
+    [ [ '筅' ], '⡔⣧⢭⢅⠀ [ \'筅\' ]' ]
+    [ [ '𥬗' ], '⡔⣰⢥⢬⢗⠀ [ \'𥬗\' ]' ]
+    [ [ 'B' ], '⡔⡂⠀ [ \'B\' ]' ]
+    [ [ 'C' ], '⡔⡃⠀ [ \'C\' ]' ]
+    [ [ '0' ], '⡔⠰⠀ [ \'0\' ]' ]
+    [ [ '1' ], '⡔⠱⠀ [ \'1\' ]' ]
+    [ [ '2' ], '⡔⠲⠀ [ \'2\' ]' ]
+    [ [ 'Number', 2.220446049250313e-16, 'EPSILON' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡌⠼⢰⠀⠀⠀⠀⠀⠀⡔⡅⡐⡓⡉⡌⡏⡎⠀ [ \'Number\', 2.220446049250313e-16, \'EPSILON\' ]' ]
+    [ [ 'Number', 9007199254740991, 'MAX_SAFE_INTEGER' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡌⡃⠿⣿⣿⣿⣿⣿⣿⡔⡍⡁⡘⡟⡓⡁⡆⡅⡟⡉⡎⡔⡅⡇⡅⡒⠀ [ \'Number\', 9007199254740991, \'MAX_SAFE_INTEGER\' ]' ]
+    [ [ 'Number', 1.7976931348623157e+308, 'MAX_VALUE' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡌⡿⣯⣿⣿⣿⣿⣿⣿⡔⡍⡁⡘⡟⡖⡁⡌⡕⡅⠀ [ \'Number\', 1.7976931348623157e+308, \'MAX_VALUE\' ]' ]
+    [ [ 'Number', 0, 'ZERO' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡌⠀⠀⠀⠀⠀⠀⠀⠀⡔⡚⡅⡒⡏⠀ [ \'Number\', 0, \'ZERO\' ]' ]
+    [ [ 'Number', -9007199254740991, 'MIN_SAFE_INTEGER' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡋⢼⣀⠀⠀⠀⠀⠀⠀⡔⡍⡉⡎⡟⡓⡁⡆⡅⡟⡉⡎⡔⡅⡇⡅⡒⠀ [ \'Number\', -9007199254740991, \'MIN_SAFE_INTEGER\' ]' ]
+    [ [ 'Number', 5e-324, 'MIN_VALUE' ], '⡔⡎⡵⡭⡢⡥⡲⠀⡌⠀⠀⠀⠀⠀⠀⠀⠁⡔⡍⡉⡎⡟⡖⡁⡌⡕⡅⠀ [ \'Number\', 5e-324, \'MIN_VALUE\' ]' ]
+    ]
+  stringify = ( x ) -> ( require 'util' ).inspect x, { maxArrayLength: null, breakLength: Infinity, }
+  # settings  = { stringify, base: 0x1e00, }
+  # settings  = { stringify, base: 0x2200, }
+  # settings  = { stringify, base: 0x2600, }
+  # settings  = { stringify, base: 0xac00, }
+  # settings  = { stringify, base: 0xa000, }
+  # settings  = { stringify, base: 0x1d6a8, }
+  settings  = { stringify, }
+  for [ probe, matcher, ] in probes_and_matchers
+    result = CODEC.as_sortline probe, settings
+    # debug '33392', stringify [ probe, result, ]
+    T.eq result, matcher
+    # echo result
   return null
 
 #===========================================================================================================

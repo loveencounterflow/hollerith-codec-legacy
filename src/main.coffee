@@ -424,3 +424,17 @@ _decode = ( buffer, idx, single, decoder ) ->
     @encodings[ name ] = encoding
   return null
 @_compile_encodings()
+
+#-----------------------------------------------------------------------------------------------------------
+@as_sortline = ( key, settings ) ->
+  joiner      = settings?[ 'joiner'     ] ? ' '
+  base        = settings?[ 'base'       ] ? 0x2800
+  stringify   = settings?[ 'stringify'  ] ? JSON.stringify
+  buffer      = @encode key
+  buffer_txt  = ( String.fromCodePoint base + buffer[ idx ] for idx in [ 0 ... buffer.length ] ).join ''
+  return buffer_txt + joiner + stringify key
+
+
+
+
+
