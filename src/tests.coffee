@@ -289,6 +289,21 @@ CODEC                     = require './main'
     # echo result
   return null
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "test: flat file DB storage (3)" ] = ( T ) ->
+  stringify           = ( x ) -> ( require 'util' ).inspect x, { maxArrayLength: null, breakLength: Infinity, }
+  probes_and_matchers = [
+    [ [ 'foo', 1234 ], { bare: false, joiner: ',', base: 19968 }, '乔书乯乯一乌乀亓么一一一一一,["foo",1234]' ]
+    [ [ 'foo', 1234 ], { bare: true, joiner: ',', base: null }, '⡔⡦⡯⡯⠀⡌⡀⢓⡈⠀⠀⠀⠀⠀' ]
+    ]
+  for [ probe, settings, matcher, ] in probes_and_matchers
+    result = CODEC.as_sortline probe, settings
+    debug '33392', stringify [ probe, settings, result, ]
+    T.eq result, matcher
+    # echo result
+  return null
+
+
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------

@@ -430,8 +430,10 @@ _decode = ( buffer, idx, single, decoder ) ->
   joiner      = settings?[ 'joiner'     ] ? ' '
   base        = settings?[ 'base'       ] ? 0x2800
   stringify   = settings?[ 'stringify'  ] ? JSON.stringify
+  bare        = settings?[ 'bare'       ] ? no
   buffer      = @encode key
   buffer_txt  = ( String.fromCodePoint base + buffer[ idx ] for idx in [ 0 ... buffer.length ] ).join ''
+  return buffer_txt if bare
   return buffer_txt + joiner + stringify key
 
 
