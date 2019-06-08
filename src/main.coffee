@@ -4,10 +4,17 @@
 ############################################################################################################
 CND                       = require 'cnd'
 rpr                       = CND.rpr
-badge                     = 'HOLLERITH/CODEC'
+badge                     = 'HOLLERITH-CODEC/MAIN'
 debug                     = CND.get_logger 'debug',     badge
 warn                      = CND.get_logger 'warn',      badge
 #...........................................................................................................
+@types                    = require './types'
+{ isa
+  validate
+  cast
+  declare
+  size_of
+  type_of }               = @types
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -64,7 +71,7 @@ rbuffer                 = new Buffer rbuffer_min_size
 grow_rbuffer = ->
   factor      = 2
   new_size    = Math.floor rbuffer.length * factor + 0.5
-  # warn "growing rbuffer to #{new_size} bytes"
+  # warn "µ44542 growing rbuffer to #{new_size} bytes"
   new_result_buffer = new Buffer new_size
   rbuffer.copy new_result_buffer
   rbuffer           = new_result_buffer
@@ -73,7 +80,7 @@ grow_rbuffer = ->
 #-----------------------------------------------------------------------------------------------------------
 release_extraneous_rbuffer_bytes = ->
   if rbuffer.length > rbuffer_max_size
-    # warn "shrinking rbuffer to #{rbuffer_max_size} bytes"
+    # warn "µ44543 shrinking rbuffer to #{rbuffer_max_size} bytes"
     rbuffer = new Buffer rbuffer_max_size
   return null
 
@@ -81,29 +88,29 @@ release_extraneous_rbuffer_bytes = ->
 #===========================================================================================================
 # VARIANTS
 #-----------------------------------------------------------------------------------------------------------
-write_singular = ( idx, value ) ->
+@write_singular = ( idx, value ) ->
   grow_rbuffer() until rbuffer.length >= idx + bytecount_singular
   if      value is null   then typemarker = tm_null
   else if value is false  then typemarker = tm_false
   else if value is true   then typemarker = tm_true
-  else throw new Error "unable to encode value of type #{CND.type_of value}"
+  else throw new Error "µ56733 unable to encode value of type #{type_of value}"
   rbuffer[ idx ] = typemarker
   return idx + bytecount_singular
 
 #-----------------------------------------------------------------------------------------------------------
-read_singular = ( buffer, idx ) ->
+@read_singular = ( buffer, idx ) ->
   switch typemarker = buffer[ idx ]
     when tm_null  then value = null
     when tm_false then value = false
     when tm_true  then value = true
-    else throw new Error "unable to decode 0x#{typemarker.toString 16} at index #{idx} (#{rpr buffer})"
+    else throw new Error "µ57564 unable to decode 0x#{typemarker.toString 16} at index #{idx} (#{rpr buffer})"
   return [ idx + bytecount_singular, value, ]
 
 
 #===========================================================================================================
 # PRIVATES
 #-----------------------------------------------------------------------------------------------------------
-write_private = ( idx, value, encoder ) ->
+@write_private = ( idx, value, encoder ) ->
   grow_rbuffer() until rbuffer.length >= idx + 3 * bytecount_typemarker
   #.........................................................................................................
   rbuffer[ idx ]  = tm_private
@@ -125,10 +132,10 @@ write_private = ( idx, value, encoder ) ->
       when '-set'
         null # already dealt with in `write`
       else
-        throw new Error "unknown built-in private type #{rpr type}"
+        throw new Error "µ58395 unknown built-in private type #{rpr type}"
   #.........................................................................................................
   wrapped_value   = [ type, proper_value, ]
-  idx             = _encode wrapped_value, idx
+  idx             = @_encode wrapped_value, idx
   #.........................................................................................................
   rbuffer[ idx ]  = tm_lo
   idx            += bytecount_typemarker
@@ -136,13 +143,13 @@ write_private = ( idx, value, encoder ) ->
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
-read_private = ( buffer, idx, decoder ) ->
+@read_private = ( buffer, idx, decoder ) ->
   idx                        += bytecount_typemarker
-  [ idx, [ type,  value, ] ]  = read_list buffer, idx
+  [ idx, [ type,  value, ] ]  = @read_list buffer, idx
   #.........................................................................................................
   if decoder?
     R = decoder type, value, symbol_fallback
-    throw new Error "encountered illegal value `undefined` when reading private type" if R is undefined
+    throw new Error "µ59226 encountered illegal value `undefined` when reading private type" if R is undefined
     R = { type, value, } if R is symbol_fallback
   #.........................................................................................................
   else if type.startsWith '-'
@@ -152,7 +159,7 @@ read_private = ( buffer, idx, decoder ) ->
         ### TAINT wasting bytes because wrapped twice ###
         R = new Set value[ 0 ]
       else
-        throw new Error "unknown built-in private type #{rpr type}"
+        throw new Error "µ60057 unknown built-in private type #{rpr type}"
   #.........................................................................................................
   else
     R = { type, value, }
@@ -162,7 +169,7 @@ read_private = ( buffer, idx, decoder ) ->
 #===========================================================================================================
 # NUMBERS
 #-----------------------------------------------------------------------------------------------------------
-write_number = ( idx, number ) ->
+@write_number = ( idx, number ) ->
   grow_rbuffer() until rbuffer.length >= idx + bytecount_number
   if number < 0
     type    = tm_nnumber
@@ -171,28 +178,28 @@ write_number = ( idx, number ) ->
     type    = tm_pnumber
   rbuffer[ idx ] = type
   rbuffer.writeDoubleBE number, idx + 1
-  _invert_buffer rbuffer, idx if type is tm_nnumber
+  @_invert_buffer rbuffer, idx if type is tm_nnumber
   return idx + bytecount_number
 
 #-----------------------------------------------------------------------------------------------------------
-write_infinity = ( idx, number ) ->
+@write_infinity = ( idx, number ) ->
   grow_rbuffer() until rbuffer.length >= idx + bytecount_singular
   rbuffer[ idx ] = if number is -Infinity then tm_ninfinity else tm_pinfinity
   return idx + bytecount_singular
 
 #-----------------------------------------------------------------------------------------------------------
-read_nnumber = ( buffer, idx ) ->
-  throw new Error "not a negative number at index #{idx}" unless buffer[ idx ] is tm_nnumber
-  copy = _invert_buffer ( new Buffer buffer.slice idx, idx + bytecount_number ), 0
+@read_nnumber = ( buffer, idx ) ->
+  throw new Error "µ60888 not a negative number at index #{idx}" unless buffer[ idx ] is tm_nnumber
+  copy = @_invert_buffer ( new Buffer buffer.slice idx, idx + bytecount_number ), 0
   return [ idx + bytecount_number, -( copy.readDoubleBE 1 ), ]
 
 #-----------------------------------------------------------------------------------------------------------
-read_pnumber = ( buffer, idx ) ->
-  throw new Error "not a positive number at index #{idx}" unless buffer[ idx ] is tm_pnumber
+@read_pnumber = ( buffer, idx ) ->
+  throw new Error "µ61719 not a positive number at index #{idx}" unless buffer[ idx ] is tm_pnumber
   return [ idx + bytecount_number, buffer.readDoubleBE idx + 1, ]
 
 #-----------------------------------------------------------------------------------------------------------
-_invert_buffer = ( buffer, idx ) ->
+@_invert_buffer = ( buffer, idx ) ->
   buffer[ i ] = ~buffer[ i ] for i in [ idx + 1 .. idx + 8 ]
   return buffer
 
@@ -200,26 +207,26 @@ _invert_buffer = ( buffer, idx ) ->
 #===========================================================================================================
 # DATES
 #-----------------------------------------------------------------------------------------------------------
-write_date = ( idx, date ) ->
+@write_date = ( idx, date ) ->
   grow_rbuffer() until rbuffer.length >= idx + bytecount_date
   number          = +date
   rbuffer[ idx ]  = tm_date
-  return write_number idx + 1, number
+  return @write_number idx + 1, number
 
 #-----------------------------------------------------------------------------------------------------------
-read_date = ( buffer, idx ) ->
-  throw new Error "not a date at index #{idx}" unless buffer[ idx ] is tm_date
+@read_date = ( buffer, idx ) ->
+  throw new Error "µ62550 not a date at index #{idx}" unless buffer[ idx ] is tm_date
   switch type = buffer[ idx + 1 ]
-    when tm_nnumber    then [ idx, value, ] = read_nnumber    buffer, idx + 1
-    when tm_pnumber    then [ idx, value, ] = read_pnumber    buffer, idx + 1
-    else throw new Error "unknown date type marker 0x#{type.toString 16} at index #{idx}"
+    when tm_nnumber    then [ idx, value, ] = @read_nnumber    buffer, idx + 1
+    when tm_pnumber    then [ idx, value, ] = @read_pnumber    buffer, idx + 1
+    else throw new Error "µ63381 unknown date type marker 0x#{type.toString 16} at index #{idx}"
   return [ idx, ( new Date value ), ]
 
 
 #===========================================================================================================
 # TEXTS
 #-----------------------------------------------------------------------------------------------------------
-write_text = ( idx, text ) ->
+@write_text = ( idx, text ) ->
   text                                = text.replace /\x01/g, '\x01\x02'
   text                                = text.replace /\x00/g, '\x01\x01'
   bytecount_text                      = ( Buffer.byteLength text, 'utf-8' ) + 2
@@ -230,14 +237,14 @@ write_text = ( idx, text ) ->
   return idx + bytecount_text
 
 #-----------------------------------------------------------------------------------------------------------
-read_text = ( buffer, idx ) ->
+@read_text = ( buffer, idx ) ->
   # urge '©J2d6R', buffer[ idx ], buffer[ idx ] is tm_text
-  throw new Error "not a text at index #{idx}" unless buffer[ idx ] is tm_text
+  throw new Error "µ64212 not a text at index #{idx}" unless buffer[ idx ] is tm_text
   stop_idx = idx
   loop
     stop_idx += +1
     break if ( byte = buffer[ stop_idx ] ) is tm_lo
-    throw new Error "runaway string at index #{idx}" unless byte?
+    throw new Error "µ65043 runaway string at index #{idx}" unless byte?
   R = buffer.toString 'utf-8', idx + 1, stop_idx
   R = R.replace /\x01\x01/g, '\x00'
   R = R.replace /\x01\x02/g, '\x01'
@@ -247,34 +254,34 @@ read_text = ( buffer, idx ) ->
 #===========================================================================================================
 # LISTS
 #-----------------------------------------------------------------------------------------------------------
-read_list = ( buffer, idx ) ->
-  throw new Error "not a list at index #{idx}" unless buffer[ idx ] is tm_list
+@read_list = ( buffer, idx ) ->
+  throw new Error "µ65874 not a list at index #{idx}" unless buffer[ idx ] is tm_list
   R     = []
   idx  += +1
   loop
     break if ( byte = buffer[ idx ] ) is tm_lo
-    [ idx, value, ] = _decode buffer, idx, true
+    [ idx, value, ] = @_decode buffer, idx, true
     R.push value[ 0 ]
-    throw new Error "runaway list at index #{idx}" unless byte?
+    throw new Error "µ66705 runaway list at index #{idx}" unless byte?
   return [ idx + 1, R, ]
 
 
 #===========================================================================================================
 #
 #-----------------------------------------------------------------------------------------------------------
-write = ( idx, value, encoder ) ->
-  switch type = CND.type_of value
-    when 'text'       then return write_text     idx, value
-    when 'number'     then return write_number   idx, value
-    when 'infinity'   then return write_infinity idx, value
-    when 'date'       then return write_date     idx, value
+@write = ( idx, value, encoder ) ->
+  switch type = type_of value
+    when 'text'       then return @write_text     idx, value
+    when 'number'     then return @write_number   idx, value
+    when 'infinity'   then return @write_infinity idx, value
+    when 'date'       then return @write_date     idx, value
     #.......................................................................................................
     when 'set'
       ### TAINT wasting bytes because wrapped too deep ###
-      return write_private  idx, { type: '-set', value: [ ( Array.from value ), ], }
+      return @write_private  idx, { type: '-set', value: [ ( Array.from value ), ], }
   #.........................................................................................................
-  return write_private  idx, value, encoder if CND.isa_pod value
-  return write_singular idx, value
+  return @write_private  idx, value, encoder if isa.object value
+  return @write_singular idx, value
 
 
 #===========================================================================================================
@@ -282,8 +289,8 @@ write = ( idx, value, encoder ) ->
 #-----------------------------------------------------------------------------------------------------------
 @encode = ( key, encoder ) ->
   rbuffer.fill 0x00
-  throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx = _encode key, 0, encoder
+  throw new Error "µ67536 expected a list, got a #{type}" unless ( type = type_of key ) is 'list'
+  idx = @_encode key, 0, encoder
   R   = new Buffer idx
   rbuffer.copy R, 0, 0, idx
   release_extraneous_rbuffer_bytes()
@@ -294,8 +301,8 @@ write = ( idx, value, encoder ) ->
 @encode_plus_hi = ( key, encoder ) ->
   ### TAINT code duplication ###
   rbuffer.fill 0x00
-  throw new Error "expected a list, got a #{type}" unless ( type = CND.type_of key ) is 'list'
-  idx             = _encode key, 0, encoder
+  throw new Error "µ68367 expected a list, got a #{type}" unless ( type = type_of key ) is 'list'
+  idx             = @_encode key, 0, encoder
   grow_rbuffer() until rbuffer.length >= idx + 1
   rbuffer[ idx ]  = tm_hi
   idx            += +1
@@ -306,58 +313,59 @@ write = ( idx, value, encoder ) ->
   return R
 
 #-----------------------------------------------------------------------------------------------------------
-_encode = ( key, idx, encoder ) ->
+@_encode = ( key, idx, encoder ) ->
   last_element_idx = key.length - 1
   for element, element_idx in key
     try
-      if CND.isa_list element
+      if isa.list element
         rbuffer[ idx ]  = tm_list
         idx            += +1
         for sub_element in element
-          idx = _encode [ sub_element, ], idx, encoder
+          idx = @_encode [ sub_element, ], idx, encoder
         rbuffer[ idx ]  = tm_lo
         idx            += +1
       else
-        idx = write idx, element, encoder
+        idx = @write idx, element, encoder
     catch error
       key_rpr = []
       for element in key
-        if CND.isa_jsbuffer element
-          key_rpr.push "#{@rpr_of_buffer null, key[ 2 ]}"
+        if isa.buffer element
+          throw new Error "µ45533 unable to encode buffers"
+          # key_rpr.push "#{@rpr_of_buffer element, key[ 2 ]}"
         else
           key_rpr.push rpr element
-      warn "detected problem with key [ #{rpr key_rpr.join ', '} ]"
+      warn "µ44544 detected problem with key [ #{rpr key_rpr.join ', '} ]"
       throw error
   #.........................................................................................................
   return idx
 
 #-----------------------------------------------------------------------------------------------------------
 @decode = ( buffer, decoder ) ->
-  return ( _decode buffer, 0, false, decoder )[ 1 ]
+  return ( @_decode buffer, 0, false, decoder )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
-_decode = ( buffer, idx, single, decoder ) ->
+@_decode = ( buffer, idx, single, decoder ) ->
   R         = []
   last_idx  = buffer.length - 1
   loop
     break if idx > last_idx
     switch type = buffer[ idx ]
-      when tm_list       then [ idx, value, ] = read_list       buffer, idx
-      when tm_text       then [ idx, value, ] = read_text       buffer, idx
-      when tm_nnumber    then [ idx, value, ] = read_nnumber    buffer, idx
+      when tm_list       then [ idx, value, ] = @read_list       buffer, idx
+      when tm_text       then [ idx, value, ] = @read_text       buffer, idx
+      when tm_nnumber    then [ idx, value, ] = @read_nnumber    buffer, idx
       when tm_ninfinity  then [ idx, value, ] = [ idx + 1, -Infinity, ]
-      when tm_pnumber    then [ idx, value, ] = read_pnumber    buffer, idx
+      when tm_pnumber    then [ idx, value, ] = @read_pnumber    buffer, idx
       when tm_pinfinity  then [ idx, value, ] = [ idx + 1, +Infinity, ]
-      when tm_date       then [ idx, value, ] = read_date       buffer, idx
-      when tm_private    then [ idx, value, ] = read_private    buffer, idx, decoder
-      else                    [ idx, value, ] = read_singular   buffer, idx
+      when tm_date       then [ idx, value, ] = @read_date       buffer, idx
+      when tm_private    then [ idx, value, ] = @read_private    buffer, idx, decoder
+      else                    [ idx, value, ] = @read_singular   buffer, idx
     R.push value
     break if single
   #.........................................................................................................
   return [ idx, R ]
 
 
-# debug ( require './dump' ).rpr_of_buffer null, buffer = @encode [ 'aaa', [], ]
+# debug ( require './dump' ).@rpr_of_buffer null, buffer = @encode [ 'aaa', [], ]
 # debug '©tP5xQ', @decode buffer
 
 #===========================================================================================================
@@ -401,13 +409,13 @@ _decode = ( buffer, idx, single, decoder ) ->
 
 
 #-----------------------------------------------------------------------------------------------------------
-@rpr_of_buffer = ( buffer, encoding ) ->
+@rpr_of_buffer = ( buffer, encoding = 'rdctn' ) ->
   return ( rpr buffer ) + ' ' +  @_encode_buffer buffer, encoding
 
 #-----------------------------------------------------------------------------------------------------------
 @_encode_buffer = ( buffer, encoding = 'rdctn' ) ->
   ### TAINT use switch, emit error if `encoding` not list or known key ###
-  encoding = @encodings[ encoding ] unless CND.isa_list encoding
+  encoding = @encodings[ encoding ] unless isa.list encoding
   return ( encoding[ buffer[ idx ] ] for idx in [ 0 ... buffer.length ] ).join ''
 
 #-----------------------------------------------------------------------------------------------------------
@@ -420,7 +428,7 @@ _decode = ( buffer, idx, single, decoder ) ->
   for name, encoding of @encodings
     encoding = chrs_of encoding.replace /\n+/g, ''
     unless ( length = encoding.length ) is 256
-      throw new Error "expected 256 characters, found #{length} in encoding #{rpr name}"
+      throw new Error "µ69198 expected 256 characters, found #{length} in encoding #{rpr name}"
     @encodings[ name ] = encoding
   return null
 @_compile_encodings()

@@ -304,22 +304,20 @@ CODEC                     = require './main'
   return null
 
 
-#===========================================================================================================
-#
-#-----------------------------------------------------------------------------------------------------------
-@_prune = ->
-  for name, value of @
-    continue if name.startsWith '_'
-    delete @[ name ] unless name in include
-  return null
+# #-----------------------------------------------------------------------------------------------------------
+# @[ "buffers" ] = ( T ) ->
+#   debug 'µ76776-1', d             = Buffer.from 'hällo wörld'
+#   debug 'µ76776-2', key_bfr       = CODEC.encode [ d, ]
+#   debug 'µ76776-3', decoded_key   = CODEC.decode key_bfr
+  # debug CODEC.rpr_of_buffer key_bfr
+  # debug CODEC.decode key_bfr
+  # debug decoded_key
+  # debug matcher
+  # T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
 
-#-----------------------------------------------------------------------------------------------------------
-@_main = ->
-  test @, 'timeout': 2500
 
 ############################################################################################################
 unless module.parent?
-  # @_prune()
-  @_main()
+  test @
 
 
