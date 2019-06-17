@@ -449,7 +449,7 @@ release_extraneous_rbuffer_bytes = ->
   stringify   = settings?[ 'stringify'  ] ? JSON.stringify
   bare        = settings?[ 'bare'       ] ? no
   buffer      = @encode key
-  buffer_txt  = ( String.fromCodePoint base + buffer[ idx ] for idx in [ 0 ... buffer.length ] ).join ''
+  buffer_txt  = ( String.fromCodePoint base + buffer[ idx ] for idx in [ 0 ... buffer.length - 1 ] ).join ''
   return buffer_txt if bare
   return buffer_txt + joiner + stringify key
 
