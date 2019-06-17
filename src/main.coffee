@@ -53,8 +53,8 @@ bytecount_date        = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number +
 #-----------------------------------------------------------------------------------------------------------
 @[ 'keys' ]  = {}
 #...........................................................................................................
-@[ 'keys' ][ 'lo' ] = new Buffer [ @[ 'typemarkers' ][ 'lo' ] ]
-@[ 'keys' ][ 'hi' ] = new Buffer [ @[ 'typemarkers' ][ 'hi' ] ]
+@[ 'keys' ][ 'lo' ] = Buffer.alloc 1, @[ 'typemarkers' ][ 'lo' ]
+@[ 'keys' ][ 'hi' ] = Buffer.alloc 1, @[ 'typemarkers' ][ 'hi' ]
 
 #-----------------------------------------------------------------------------------------------------------
 @[ 'symbols' ]  = {}
@@ -66,14 +66,14 @@ symbol_fallback = @[ 'fallback' ] = Symbol 'fallback'
 #-----------------------------------------------------------------------------------------------------------
 rbuffer_min_size        = 1024
 rbuffer_max_size        = 65536
-rbuffer                 = new Buffer rbuffer_min_size
+rbuffer                 = Buffer.alloc rbuffer_min_size
 
 #-----------------------------------------------------------------------------------------------------------
 grow_rbuffer = ->
   factor      = 2
   new_size    = Math.floor rbuffer.length * factor + 0.5
   # warn "µ44542 growing rbuffer to #{new_size} bytes"
-  new_result_buffer = new Buffer new_size
+  new_result_buffer = Buffer.alloc new_size
   rbuffer.copy new_result_buffer
   rbuffer           = new_result_buffer
   return null
@@ -82,7 +82,7 @@ grow_rbuffer = ->
 release_extraneous_rbuffer_bytes = ->
   if rbuffer.length > rbuffer_max_size
     # warn "µ44543 shrinking rbuffer to #{rbuffer_max_size} bytes"
-    rbuffer = new Buffer rbuffer_max_size
+    rbuffer = Buffer.alloc rbuffer_max_size
   return null
 
 
@@ -194,7 +194,7 @@ release_extraneous_rbuffer_bytes = ->
 #-----------------------------------------------------------------------------------------------------------
 @read_nnumber = ( buffer, idx ) ->
   throw new Error "µ60888 not a negative number at index #{idx}" unless buffer[ idx ] is tm_nnumber
-  copy = @_invert_buffer ( new Buffer buffer.slice idx, idx + bytecount_number ), 0
+  copy = @_invert_buffer ( Buffer.from buffer.slice idx, idx + bytecount_number ), 0
   return [ idx + bytecount_number, -( copy.readDoubleBE 1 ), ]
 
 #-----------------------------------------------------------------------------------------------------------
@@ -298,7 +298,7 @@ release_extraneous_rbuffer_bytes = ->
   rbuffer.fill 0x00
   throw new Error "µ67536 expected a list, got a #{type}" unless ( type = type_of key ) is 'list'
   idx = @_encode key, 0, encoder
-  R   = new Buffer idx
+  R   = Buffer.alloc idx
   rbuffer.copy R, 0, 0, idx
   release_extraneous_rbuffer_bytes()
   #.........................................................................................................
@@ -313,7 +313,7 @@ release_extraneous_rbuffer_bytes = ->
   grow_rbuffer() until rbuffer.length >= idx + 1
   rbuffer[ idx ]  = tm_hi
   idx            += +1
-  R               = new Buffer idx
+  R               = Buffer.alloc idx
   rbuffer.copy R, 0, 0, idx
   release_extraneous_rbuffer_bytes()
   #.........................................................................................................
