@@ -17,7 +17,7 @@ echo                      = CND.echo.bind CND
 test                      = require 'guy-test'
 CODEC                     = require './main'
 ƒ                         = CND.format_number
-
+{ jr, }                   = CND
 
 #-----------------------------------------------------------------------------------------------------------
 @[ "codec encodes and decodes numbers" ] = ( T ) ->
@@ -319,6 +319,7 @@ CODEC                     = require './main'
 #-----------------------------------------------------------------------------------------------------------
 @[ "test: ordering where negatives precede void" ] = ( T ) ->
   probes = [
+    [-10,]
     [10,]
     [10,0]
     [10,-1]
@@ -347,31 +348,33 @@ CODEC                     = require './main'
   buffer_as_text  = ( buffer ) -> buffer.toString 'hex'
   jrx             = ( x ) -> ( JSON.stringify x ).padEnd 15
   encode          = ( x ) -> buffer_as_text CODEC.encode x
-  probes          = ( [ ( jrx probe ), ( encode probe ), ] for probe in probes )
-  probes.sort ( a, b ) ->
-    return -1 if a[ 1 ] < b[ 1 ]
-    return +1 if a[ 1 ] > b[ 1 ]
+  results         = ( [ ( jrx probe ), ( probe ), ( encode probe ), ] for probe in probes )
+  results.sort ( a, b ) ->
+    return -1 if a[ 2 ] < b[ 2 ]
+    return +1 if a[ 2 ] > b[ 2 ]
     return  0
-  for probe in probes
-    urge probe.join ' ... '
+  for result in results
+    urge result[ 0 ] + ' ... ' + result[ 2 ]
+  results = ( result[ 1 ] for result in results )
+  T.eq results, [[-10],[-1],[],[0],[1,-1],[1],[1,0],[1,1],[10,-2],[10,-2,3],[10,-1],[10,-1,3],[10],[10,0],[10,0,3],[10,1],[10,1,3],[10,2],[10,2,3],[10,4,-2],[10,4,-1],[10,4],[10,4,0],[10,4,1],[10,4,2]]
   return null
 
 
 ############################################################################################################
 unless module.parent?
   # test @
-  # test @[ "test: ordering where negatives precede void" ]
+  test @[ "test: ordering where negatives precede void" ]
 
-  buffer_as_text  = ( buffer ) -> buffer.toString 'hex'
-  jrx             = ( x ) -> ( JSON.stringify x ).padEnd 15
-  encode          = ( x ) -> CODEC.encode x
-  decode          = ( x ) -> CODEC.decode x
-  info ( buffer_as_text blob = encode [ 10, -3, ] ), ( decode blob )
-  info ( buffer_as_text blob = encode [ 10, -2, ] ), ( decode blob )
-  info ( buffer_as_text blob = encode [ 10, -1, ] ), ( decode blob )
-  info ( buffer_as_text blob = encode [ 10, ]     ), ( decode blob )
-  info ( buffer_as_text blob = encode [ 10, 0, ]  ), ( decode blob )
-  info ( buffer_as_text blob = encode [ 10, 1, ]  ), ( decode blob )
+  # buffer_as_text  = ( buffer ) -> buffer.toString 'hex'
+  # jrx             = ( x ) -> ( JSON.stringify x ).padEnd 15
+  # encode          = ( x ) -> CODEC.encode x
+  # decode          = ( x ) -> CODEC.decode x
+  # info ( buffer_as_text blob = encode [ 10, -3, ] ), ( decode blob )
+  # info ( buffer_as_text blob = encode [ 10, -2, ] ), ( decode blob )
+  # info ( buffer_as_text blob = encode [ 10, -1, ] ), ( decode blob )
+  # info ( buffer_as_text blob = encode [ 10, ]     ), ( decode blob )
+  # info ( buffer_as_text blob = encode [ 10, 0, ]  ), ( decode blob )
+  # info ( buffer_as_text blob = encode [ 10, 1, ]  ), ( decode blob )
 
 
 
