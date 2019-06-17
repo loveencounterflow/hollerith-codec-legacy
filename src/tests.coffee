@@ -316,8 +316,63 @@ CODEC                     = require './main'
   # T.ok @_sets_are_equal matcher[ 0 ], decoded_key[ 0 ]
 
 
+#-----------------------------------------------------------------------------------------------------------
+@[ "test: ordering where negatives precede void" ] = ( T ) ->
+  probes = [
+    [10,]
+    [10,0]
+    [10,-1]
+    [10,-2]
+    [10,1]
+    [10,2]
+    [10,4]
+    [10,4,0]
+    [10,4,-1]
+    [10,4,-2]
+    [10,4,1]
+    [10,4,2]
+    [10,0,3]
+    [10,-1,3]
+    [10,-2,3]
+    [10,1,3]
+    [10,2,3]
+    []
+    [0]
+    [-1]
+    [1]
+    [1,0]
+    [1,-1]
+    [1,1]
+    ]
+  buffer_as_text  = ( buffer ) -> buffer.toString 'hex'
+  jrx             = ( x ) -> ( JSON.stringify x ).padEnd 15
+  encode          = ( x ) -> buffer_as_text CODEC.encode x
+  probes          = ( [ ( jrx probe ), ( encode probe ), ] for probe in probes )
+  probes.sort ( a, b ) ->
+    return -1 if a[ 1 ] < b[ 1 ]
+    return +1 if a[ 1 ] > b[ 1 ]
+    return  0
+  for probe in probes
+    urge probe.join ' ... '
+  return null
+
+
 ############################################################################################################
 unless module.parent?
-  test @
+  # test @
+  # test @[ "test: ordering where negatives precede void" ]
+
+  buffer_as_text  = ( buffer ) -> buffer.toString 'hex'
+  jrx             = ( x ) -> ( JSON.stringify x ).padEnd 15
+  encode          = ( x ) -> CODEC.encode x
+  decode          = ( x ) -> CODEC.decode x
+  info ( buffer_as_text blob = encode [ 10, -3, ] ), ( decode blob )
+  info ( buffer_as_text blob = encode [ 10, -2, ] ), ( decode blob )
+  info ( buffer_as_text blob = encode [ 10, -1, ] ), ( decode blob )
+  info ( buffer_as_text blob = encode [ 10, ]     ), ( decode blob )
+  info ( buffer_as_text blob = encode [ 10, 0, ]  ), ( decode blob )
+  info ( buffer_as_text blob = encode [ 10, 1, ]  ), ( decode blob )
+
+
 
 

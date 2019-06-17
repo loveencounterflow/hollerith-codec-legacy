@@ -15,6 +15,7 @@ warn                      = CND.get_logger 'warn',      badge
   declare
   size_of
   type_of }               = @types
+VOID                      = Symbol 'VOID'
 
 
 #-----------------------------------------------------------------------------------------------------------
@@ -28,9 +29,9 @@ tm_list             = @[ 'typemarkers'  ][ 'list'       ] = 'E'.codePointAt 0 # 
 tm_date             = @[ 'typemarkers'  ][ 'date'       ] = 'G'.codePointAt 0 # 0x47
 tm_ninfinity        = @[ 'typemarkers'  ][ 'ninfinity'  ] = 'J'.codePointAt 0 # 0x4a
 tm_nnumber          = @[ 'typemarkers'  ][ 'nnumber'    ] = 'K'.codePointAt 0 # 0x4b
-tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'L'.codePointAt 0 # 0x4c
-tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'M'.codePointAt 0 # 0x4d
-# tm_set              = @[ 'typemarkers'  ][ 'set'        ] = 'S'.codePointAt 0 # 0x53
+tm_void             = @[ 'typemarkers'  ][ 'void'       ] = 'L'.codePointAt 0 # 0x4c
+tm_pnumber          = @[ 'typemarkers'  ][ 'pnumber'    ] = 'M'.codePointAt 0 # 0x4d
+tm_pinfinity        = @[ 'typemarkers'  ][ 'pinfinity'  ] = 'N'.codePointAt 0 # 0x4e
 tm_text             = @[ 'typemarkers'  ][ 'text'       ] = 'T'.codePointAt 0 # 0x54
 tm_private          = @[ 'typemarkers'  ][ 'private'    ] = 'Z'.codePointAt 0 # 0x5a
 tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
@@ -93,6 +94,7 @@ release_extraneous_rbuffer_bytes = ->
   if      value is null   then typemarker = tm_null
   else if value is false  then typemarker = tm_false
   else if value is true   then typemarker = tm_true
+  else if value is VOID   then typemarker = tm_void
   else throw new Error "µ56733 unable to encode value of type #{type_of value}"
   rbuffer[ idx ] = typemarker
   return idx + bytecount_singular
@@ -103,6 +105,8 @@ release_extraneous_rbuffer_bytes = ->
     when tm_null  then value = null
     when tm_false then value = false
     when tm_true  then value = true
+    ### TAINT not strictly needed as we eliminate VOID prior to decoding ###
+    when tm_void  then value = VOID
     else throw new Error "µ57564 unable to decode 0x#{typemarker.toString 16} at index #{idx} (#{rpr buffer})"
   return [ idx + bytecount_singular, value, ]
 
@@ -270,6 +274,7 @@ release_extraneous_rbuffer_bytes = ->
 #
 #-----------------------------------------------------------------------------------------------------------
 @write = ( idx, value, encoder ) ->
+  return @write_singular idx, value if value is VOID
   switch type = type_of value
     when 'text'       then return @write_text     idx, value
     when 'number'     then return @write_number   idx, value
@@ -288,6 +293,7 @@ release_extraneous_rbuffer_bytes = ->
 # PUBLIC API
 #-----------------------------------------------------------------------------------------------------------
 @encode = ( key, encoder ) ->
+  key.push VOID
   rbuffer.fill 0x00
   throw new Error "µ67536 expected a list, got a #{type}" unless ( type = type_of key ) is 'list'
   idx = @_encode key, 0, encoder
@@ -341,6 +347,8 @@ release_extraneous_rbuffer_bytes = ->
 
 #-----------------------------------------------------------------------------------------------------------
 @decode = ( buffer, decoder ) ->
+  ### eliminate VOID prior to decoding ###
+  buffer = buffer.slice 0, buffer.length - 1
   return ( @_decode buffer, 0, false, decoder )[ 1 ]
 
 #-----------------------------------------------------------------------------------------------------------
