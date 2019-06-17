@@ -293,6 +293,7 @@ release_extraneous_rbuffer_bytes = ->
 # PUBLIC API
 #-----------------------------------------------------------------------------------------------------------
 @encode = ( key, encoder ) ->
+  key = key[ .. ]
   key.push VOID
   rbuffer.fill 0x00
   throw new Error "µ67536 expected a list, got a #{type}" unless ( type = type_of key ) is 'list'
