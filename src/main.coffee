@@ -40,8 +40,8 @@ tm_hi               = @[ 'typemarkers'  ][ 'hi'         ] = 0xff
 @[ 'bytecounts' ]     = {}
 bytecount_singular    = @[ 'bytecounts'   ][ 'singular'   ] = 1
 bytecount_typemarker  = @[ 'bytecounts'   ][ 'typemarker' ] = 1
-bytecount_number      = @[ 'bytecounts'   ][ 'number'     ] = 9
-bytecount_date        = @[ 'bytecounts'   ][ 'date'       ] = bytecount_number + 1
+bytecount_float       = @[ 'bytecounts'   ][ 'float'      ] = 9
+bytecount_date        = @[ 'bytecounts'   ][ 'date'       ] = bytecount_float + 1
 
 #-----------------------------------------------------------------------------------------------------------
 @[ 'sentinels' ]  = {}
@@ -174,7 +174,7 @@ release_extraneous_rbuffer_bytes = ->
 # NUMBERS
 #-----------------------------------------------------------------------------------------------------------
 @write_number = ( idx, number ) ->
-  grow_rbuffer() until rbuffer.length >= idx + bytecount_number
+  grow_rbuffer() until rbuffer.length >= idx + bytecount_float
   if number < 0
     type    = tm_nnumber
     number  = -number
@@ -183,7 +183,7 @@ release_extraneous_rbuffer_bytes = ->
   rbuffer[ idx ] = type
   rbuffer.writeDoubleBE number, idx + 1
   @_invert_buffer rbuffer, idx if type is tm_nnumber
-  return idx + bytecount_number
+  return idx + bytecount_float
 
 #-----------------------------------------------------------------------------------------------------------
 @write_infinity = ( idx, number ) ->
@@ -194,13 +194,13 @@ release_extraneous_rbuffer_bytes = ->
 #-----------------------------------------------------------------------------------------------------------
 @read_nnumber = ( buffer, idx ) ->
   throw new Error "µ60888 not a negative number at index #{idx}" unless buffer[ idx ] is tm_nnumber
-  copy = @_invert_buffer ( Buffer.from buffer.slice idx, idx + bytecount_number ), 0
-  return [ idx + bytecount_number, -( copy.readDoubleBE 1 ), ]
+  copy = @_invert_buffer ( Buffer.from buffer.slice idx, idx + bytecount_float ), 0
+  return [ idx + bytecount_float, -( copy.readDoubleBE 1 ), ]
 
 #-----------------------------------------------------------------------------------------------------------
 @read_pnumber = ( buffer, idx ) ->
   throw new Error "µ61719 not a positive number at index #{idx}" unless buffer[ idx ] is tm_pnumber
-  return [ idx + bytecount_number, buffer.readDoubleBE idx + 1, ]
+  return [ idx + bytecount_float, buffer.readDoubleBE idx + 1, ]
 
 #-----------------------------------------------------------------------------------------------------------
 @_invert_buffer = ( buffer, idx ) ->
@@ -277,7 +277,7 @@ release_extraneous_rbuffer_bytes = ->
   return @write_singular idx, value if value is VOID
   switch type = type_of value
     when 'text'       then return @write_text     idx, value
-    when 'number'     then return @write_number   idx, value
+    when 'float'     then return @write_number   idx, value
     when 'infinity'   then return @write_infinity idx, value
     when 'date'       then return @write_date     idx, value
     #.......................................................................................................

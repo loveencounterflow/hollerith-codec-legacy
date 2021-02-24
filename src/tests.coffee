@@ -108,7 +108,7 @@ CODEC                     = require './main'
 #-----------------------------------------------------------------------------------------------------------
 @_sets_are_equal = ( a, b ) ->
   ### TAINT doesn't work for (sub-) elements that are sets or maps ###
-  return false unless ( CND.isa a, 'set' ) and ( CND.isa b, 'set' )
+  return false unless ( CODEC.types.isa.set a ) and ( CODEC.types.isa.set b )
   return false unless a.size is b.size
   a_keys = a.keys()
   b_keys = b.keys()
@@ -116,7 +116,7 @@ CODEC                     = require './main'
     { value: a_value, done: a_done, } = a_keys.next()
     { value: b_value, done: b_done, } = b_keys.next()
     break if a_done or b_done
-    return false unless CND.equals a_value, b_value
+    return false unless CODEC.types.equals a_value, b_value
   return true
 
 #-----------------------------------------------------------------------------------------------------------
