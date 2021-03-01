@@ -5,7 +5,7 @@
   "main": "lib/main.js",
   "dependencies": {
     "cnd": "9.2.1",
-    "intertype": "7.6.3"
+    "intertype": "7.6.5"
   },
   "devDependencies": {
     "guy-test": "4.0.1"
