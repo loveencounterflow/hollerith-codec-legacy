@@ -3,6 +3,7 @@
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [hollerith-codec](#hollerith-codec)
+  - [Benchmarks](#benchmarks)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -57,6 +58,20 @@ a *negative number*. By way of example, sorting now looks like this (with hexade
 [  10,    4,    2,   ] ... 4d 4024000000000000  4d 4010000000000000  4d 4000000000000000 4c
 ```
 
+
+## Benchmarks
+
+```
+Sample run:
+hollerith_tng      0.235 s  300,000 items       1,274,500⏶Hz             785⏷nspc
+hollerith_bcd      2.543 s  300,000 items         117,963⏶Hz           8,477⏷nspc
+hollerith_classic  7.113 s  300,000 items          42,176⏶Hz          23,710⏷nspc
+
+Averages:
+00:56 HENGIST/BENCHMARKS  ▶  hollerith_tng      1,248,369 Hz ≙ 1 ÷ 1.0       100.0 % │████████████▌│
+00:56 HENGIST/BENCHMARKS  ▶  hollerith_bcd        118,161 Hz ≙ 1 ÷ 10.6        9.5 % │█▏           │
+00:56 HENGIST/BENCHMARKS  ▶  hollerith_classic     42,056 Hz ≙ 1 ÷ 29.7        3.4 % │▍            │
+```
 
 
 
