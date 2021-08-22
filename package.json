@@ -4,11 +4,11 @@
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
   "dependencies": {
-    "cnd": "9.2.1",
-    "intertype": "7.6.5"
+    "cnd": "9.2.2",
+    "intertype": "7.6.7"
   },
   "devDependencies": {
-    "guy-test": "4.0.1"
+    "guy-test": "4.1.0"
   },
   "scripts": {
     "build": "coffee --map -o lib -c src",
