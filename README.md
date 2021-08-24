@@ -61,17 +61,17 @@ a *negative number*. By way of example, sorting now looks like this (with hexade
 
 ## Benchmarks
 
+
 ```
-Sample run:
-hollerith_tng      0.235 s  300,000 items       1,274,500⏶Hz             785⏷nspc
-hollerith_bcd      2.543 s  300,000 items         117,963⏶Hz           8,477⏷nspc
-hollerith_classic  7.113 s  300,000 items          42,176⏶Hz          23,710⏷nspc
-
-Averages:
-00:56 HENGIST/BENCHMARKS  ▶  hollerith_tng      1,248,369 Hz ≙ 1 ÷ 1.0       100.0 % │████████████▌│
-00:56 HENGIST/BENCHMARKS  ▶  hollerith_bcd        118,161 Hz ≙ 1 ÷ 10.6        9.5 % │█▏           │
-00:56 HENGIST/BENCHMARKS  ▶  hollerith_classic     42,056 Hz ≙ 1 ÷ 29.7        3.4 % │▍            │
+hollerith_tng       0.236 s    300,000 items     1,269,827⏶Hz             788⏷nspc
+hollerith_bcd       2.567 s    300,000 items       116,873⏶Hz           8,556⏷nspc
+hollerith_classic   7.302 s    300,000 items        41,087⏶Hz          24,339⏷nspc
+charwise            9.924 s    300,000 items        30,231⏶Hz          33,079⏷nspc
+bytewise           15.028 s    300,000 items        19,963⏶Hz          50,092⏷nspc
+03:05 HENGIST/BENCHMARKS  ▶  hollerith_tng       1,141,367  Hz ≙ 1 ÷ 1.0    100.0 % │████████████▌│
+03:05 HENGIST/BENCHMARKS  ▶  hollerith_bcd         115,952  Hz ≙ 1 ÷ 9.8     10.2 % │█▎           │
+03:05 HENGIST/BENCHMARKS  ▶  hollerith_classic      40,913  Hz ≙ 1 ÷ 27.9     3.6 % │▌            │
+03:05 HENGIST/BENCHMARKS  ▶  charwise               30,099  Hz ≙ 1 ÷ 37.9     2.6 % │▍            │
+03:05 HENGIST/BENCHMARKS  ▶  bytewise               19,642  Hz ≙ 1 ÷ 58.1     1.7 % │▎            │
 ```
-
-
 
