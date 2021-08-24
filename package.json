@@ -1,5 +1,5 @@
 {
-  "name": "hollerith-codec",
+  "name": "hollerith-codec-legacy",
   "version": "3.1.1",
   "description": "Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.",
   "main": "lib/main.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/loveencounterflow/hollerith-codec.git"
+    "url": "git+https://github.com/loveencounterflow/hollerith-codec-legacy.git"
   },
   "keywords": [
     "binary",
@@ -33,7 +33,7 @@
   "author": "",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/loveencounterflow/hollerith-codec/issues"
+    "url": "https://github.com/loveencounterflow/hollerith-codec-legacy/issues"
   },
-  "homepage": "https://github.com/loveencounterflow/hollerith-codec#readme"
+  "homepage": "https://github.com/loveencounterflow/hollerith-codec-legacy#readme"
 }
