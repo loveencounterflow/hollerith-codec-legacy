@@ -1,9 +1,16 @@
+
+# hollerith-codec
+
+Binary encoding for Hollerith that provides a total ordering for primitive datatypes and lists of those.
+Used by [Hollerith](https://github.com/loveencounterflow/hollerith-legacy) and
+[KWIC](https://github.com/loveencounterflow/kwic).
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [DEPRECATION NOTICE](#deprecation-notice)
-- [hollerith-codec](#hollerith-codec)
+- [Documentation left here for Posterity](#documentation-left-here-for-posterity)
   - [Benchmarks](#benchmarks)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -17,13 +24,7 @@ This package has been deprecated; for more see
 * that leads to a new major version of [Hollerith](https://github.com/loveencounterflow/hollerith-legacy) and
   [`icql-dba-hollerith`](https://github.com/loveencounterflow/hollerith-legacy) (TBD)
 
-# hollerith-codec
-
-Binary encoding for Hollerith that provides a total ordering for primitive
-datatypes and lists of those. Used by
-[Hollerith](https://github.com/loveencounterflow/hollerith-legacy) and
-[KWIC](https://github.com/loveencounterflow/kwic).
-
+# Documentation left here for Posterity
 
 **Breaking Change** in v2.x: Prior to v2.x, when comparing two lists `a`, `b` where `a` is a prefix of `b`
 used to be sorted with `a` first, then `b`, i.o.w. a shorter word always precedes a longer word that starts
