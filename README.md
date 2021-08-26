@@ -2,23 +2,26 @@
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
+- [DEPRECATION NOTICE](#deprecation-notice)
 - [hollerith-codec](#hollerith-codec)
   - [Benchmarks](#benchmarks)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 
+# DEPRECATION NOTICE
 
-- [hollerith-codec](#hollerith-codec)
+This package has been deprecated; for more see
 
-> **Table of Contents**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
-
+* [the Future](https://github.com/loveencounterflow/hollerith/blob/master/README-transition.md)
+* that leads to a new major version of [Hollerith](https://github.com/loveencounterflow/hollerith-legacy) and
+  [`icql-dba-hollerith`](https://github.com/loveencounterflow/hollerith-legacy) (TBD)
 
 # hollerith-codec
 
 Binary encoding for Hollerith that provides a total ordering for primitive
 datatypes and lists of those. Used by
-[Hollerith](https://github.com/loveencounterflow/hollerith2) and
+[Hollerith](https://github.com/loveencounterflow/hollerith-legacy) and
 [KWIC](https://github.com/loveencounterflow/kwic).
 
 
